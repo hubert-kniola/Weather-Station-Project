@@ -1,0 +1,169 @@
+body
+{
+    background-color: #222222;
+    color: #ffffff;
+    font-family: 'Lato', sans-serif;
+    font-size: 20px;
+}
+
+#container
+{
+    width: 2000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.rectangle
+{
+    width: 1600px;
+    margin: 5px;
+}
+
+.square
+{
+    width: 50%;
+    float: left;
+}
+
+#logo
+{
+    float: left;
+    font-family: 'Josefin Sans', sans-serif;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 40px;
+    width: 900px;
+}
+
+#zegar
+{
+    float: left;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 55px;
+    margin-left: 150px;
+}
+
+.tile1
+{
+    margin: 10px;
+    width: 230px;
+    height: 142px;
+    background-color: #3095d3;
+    float: left;
+    margin-left: 150px;
+    text-align: center;
+    border-radius: 19px 19px 19px 19px;
+}
+
+.tile1:hover
+{
+    background-color: #2084c2;
+}
+
+.tile2
+{
+    margin: 10px;
+    width: 230px;
+    height: 142px;
+    background-color: #3095d3;
+    float: left;
+    text-align: center;
+    border-radius: 19px 19px 19px 19px;
+}
+
+.tile2:hover
+{
+    background-color: #2084c2;
+}
+
+.tile3
+{
+    margin: 10px;
+    width: 230px;
+    height: 142px;
+    background-color: #3095d3;
+    float: left;
+}
+
+.tile4
+{
+    margin: 10px;
+    width: 482px;
+    height: 142px;
+    background-color: #39d425;
+    float: left;
+    margin-left: 150px;
+    text-align: center;
+    border-radius: 19px 19px 19px 19px;
+}
+
+.tile4:hover
+{
+    background-color: #28c314;
+}
+
+.tile5
+{
+    margin: 10px;
+    width: 598px;
+    height: 600px;
+    background-color: #111111;
+    clear: both;
+    text-align: justify;
+    padding: 30px;
+    border-radius: 19px 19px 19px 19px;
+}
+
+.github
+{
+    margin: 5px;
+    width: 80px;
+    height: 80px;
+    background-color: #39d425;
+    float: left;
+    margin-left: 10px;
+    text-align: center;
+    border-radius: 19px 19px 19px 19px;
+}
+
+.github:hover
+{
+    background-color: #d31414;
+}
+
+a.tilelink
+{
+    display: block;
+    width: 230px;
+    height: 142px;
+    border-radius: 19px 19px 19px 19px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+a.tilelinkcloud
+{
+    display: block;
+    width: 482px;
+    height: 142px;
+    border-radius: 19px 19px 19px 19px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+a.tilelinkgithub
+{
+    display: block;
+    width: 80px;
+    height: 80px;
+    border-radius: 19px 19px 19px 19px;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+a.tilelinkhtml5
+{
+    color: #ffffff;
+    text-decoration: none;
+}

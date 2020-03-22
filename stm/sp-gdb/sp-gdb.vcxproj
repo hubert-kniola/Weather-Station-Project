@@ -41,7 +41,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
     <ClCompile>
       <AdditionalIncludeDirectories>..\sp-mx\Inc;..\sp-mx\Drivers\CMSIS\Include;..\sp-mx\Drivers\CMSIS\Device\ST\STM32F4xx\Include;..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Inc;..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy;%(ClCompile.AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>flash_layout;STM32F407xx;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG=1;flash_layout;STM32F407xx;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions />
       <CLanguageStandard />
       <CPPLanguageStandard />
@@ -56,7 +56,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
     <ClCompile>
       <AdditionalIncludeDirectories>..\sp-mx\Inc;..\sp-mx\Drivers\CMSIS\Include;..\sp-mx\Drivers\CMSIS\Device\ST\STM32F4xx\Include;..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Inc;..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy;%(ClCompile.AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>flash_layout;STM32F407xx;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG=1;RELEASE=1;flash_layout;STM32F407xx;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions />
       <CLanguageStandard />
       <CPPLanguageStandard />
@@ -93,6 +93,8 @@
     <ClCompile Include="..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ex.c" />
     <ClCompile Include="..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_flash_ramfunc.c" />
     <ClCompile Include="..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c" />
+    <ClCompile Include="SP_RGB.c" />
+    <ClInclude Include="SP_RGB.h" />
     <None Include="stm32.props" />
     <ClCompile Include="$(BSP_ROOT)\STM32F4xxxx\StartupFiles\startup_stm32f407xx.c" />
     <ClInclude Include="..\sp-mx\Inc\stm32f4xx_it.h" />

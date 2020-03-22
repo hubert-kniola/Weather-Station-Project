@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "SP_RGB.h"
 
 /* USER CODE END Includes */
 
@@ -45,7 +46,7 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 /* USER CODE BEGIN PV */
-
+uint8_t _led = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -54,7 +55,8 @@ static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -93,15 +95,22 @@ int main(void)
 	MX_TIM2_Init();
 	MX_TIM3_Init();
 	/* USER CODE BEGIN 2 */
+	RGB_Init();
+	
+	HAL_TIM_Base_Start_IT(&htim2); /* RGB Tim Init */
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
+	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+	
+	HAL_TIM_Base_Start_IT(&htim3); /* System Update Tim Init */
+  /* USER CODE END 2 */
 
-	/* USER CODE END 2 */
-
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
-		HAL_Delay(250);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+		HAL_Delay(1000);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -171,9 +180,9 @@ static void MX_TIM2_Init(void)
 
 	/* USER CODE END TIM2_Init 1 */
 	htim2.Instance = TIM2;
-	htim2.Init.Prescaler = 2999;
+	htim2.Init.Prescaler = 83;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 27;
+	htim2.Init.Period = 999;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
@@ -300,7 +309,31 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/* SP Callback Definitions */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == GPIO_PIN_0)
+	{
+		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
+		{
+			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+			++_led;
+			if (_led > 9) _led = 0;
+		}
+	}
+}
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM2) /* RGB Led timer callback */
+	{
+		_RGB_Test(_led);
+	}
+	else if(htim->Instance == TIM3) /* System update timer callback */
+	{
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+	}
+}
 /* USER CODE END 4 */
 
 /**
@@ -310,7 +343,7 @@ static void MX_GPIO_Init(void)
 void Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
-	/* User can add his own implementation to report the HAL error return state */
+	  /* User can add his own implementation to report the HAL error return state */
 
 	/* USER CODE END Error_Handler_Debug */
 }
@@ -326,9 +359,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
 	/* USER CODE BEGIN 6 */
-	/* User can add his own implementation to report the file name and line number,
-	   tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	 /* USER CODE END 6 */
+	  /* User can add his own implementation to report the file name and line number,
+	     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

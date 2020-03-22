@@ -1,4 +1,4 @@
 USER -> Update [PA0-WKUP]: EXTI0
 LED -> Info [PD12;PD13;PD14;PD15]: GPIO_Output
-TIM2, 1 kHz -> RGB_LED [PA5-CH1;PA1-CH2;PA2-CH3]: prescaler = 2999, period = 27
+TIM2, 1 kHz -> RGB_LED [PA5-CH1;PA1-CH2;PA2-CH3]: prescaler = 83, period = 999
 TIM3, 2 Hz -> Update []: prescaler = 59999, period = 699 

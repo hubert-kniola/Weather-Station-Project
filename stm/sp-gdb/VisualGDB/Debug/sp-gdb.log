@@ -1,6 +1,6 @@
-﻿  main.c
+﻿  SP_RGB.c
   Linking VisualGDB/Debug/sp-gdb...
   ------------------- Memory utilization report -------------------
-  Used FLASH: 10KB out of 1024KB (1%) [+144]
-  Used SRAM: 172 bytes out of 128KB (0%)
+  Used FLASH: 12KB out of 1024KB (1%) [+48]
+  Used SRAM: 192 bytes out of 128KB (0%)
   Used CCMRAM: 0 bytes out of 64KB (0%)

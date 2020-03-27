@@ -60,6 +60,33 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LCD_D6_Pin GPIO_PIN_2
+#define LCD_D6_GPIO_Port GPIOE
+#define LCD_D7_Pin GPIO_PIN_3
+#define LCD_D7_GPIO_Port GPIOE
+#define LCD_RS_Pin GPIO_PIN_4
+#define LCD_RS_GPIO_Port GPIOE
+#define LCD_RW_Pin GPIO_PIN_5
+#define LCD_RW_GPIO_Port GPIOE
+#define LCD_E_Pin GPIO_PIN_6
+#define LCD_E_GPIO_Port GPIOE
+#define LCD_Screen_Pin GPIO_PIN_15
+#define LCD_Screen_GPIO_Port GPIOC
+#define STM_UserButton_Pin GPIO_PIN_0
+#define STM_UserButton_GPIO_Port GPIOA
+#define STM_UserButton_EXTI_IRQn EXTI0_IRQn
+#define STM_Green_Pin GPIO_PIN_12
+#define STM_Green_GPIO_Port GPIOD
+#define STM_Orange_Pin GPIO_PIN_13
+#define STM_Orange_GPIO_Port GPIOD
+#define STM_Red_Pin GPIO_PIN_14
+#define STM_Red_GPIO_Port GPIOD
+#define STM_Blue_Pin GPIO_PIN_15
+#define STM_Blue_GPIO_Port GPIOD
+#define LCD_D4_Pin GPIO_PIN_0
+#define LCD_D4_GPIO_Port GPIOE
+#define LCD_D5_Pin GPIO_PIN_1
+#define LCD_D5_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

@@ -24,7 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "SP_RGB.h"
-
+#include "SP_LCD.h"
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,6 +97,7 @@ int main(void)
 	MX_TIM3_Init();
 	/* USER CODE BEGIN 2 */
 	RGB_Init();
+	LCD_Init();
 	
 	HAL_TIM_Base_Start_IT(&htim2); /* RGB Tim Init */
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
@@ -107,13 +109,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	
 	while (1)
 	{
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
-		HAL_Delay(1000);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
+		
 	}
 	/* USER CODE END 3 */
 }
@@ -282,21 +284,48 @@ static void MX_GPIO_Init(void)
 	GPIO_InitTypeDef GPIO_InitStruct = { 0 };
 
 	/* GPIO Ports Clock Enable */
+	__HAL_RCC_GPIOE_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOE,
+		LCD_D6_Pin|LCD_D7_Pin|LCD_RS_Pin|LCD_RW_Pin 
+	                        |LCD_E_Pin|LCD_D4_Pin|LCD_D5_Pin,
+		GPIO_PIN_RESET);
 
-	/*Configure GPIO pin : PA0 */
-	GPIO_InitStruct.Pin = GPIO_PIN_0;
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(LCD_Screen_GPIO_Port, LCD_Screen_Pin, GPIO_PIN_RESET);
+
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOD, STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin, GPIO_PIN_RESET);
+
+	/*Configure GPIO pins : LCD_D6_Pin LCD_D7_Pin LCD_RS_Pin LCD_RW_Pin 
+	                         LCD_E_Pin LCD_D4_Pin LCD_D5_Pin */
+	GPIO_InitStruct.Pin = LCD_D6_Pin | LCD_D7_Pin | LCD_RS_Pin | LCD_RW_Pin 
+	                        | LCD_E_Pin | LCD_D4_Pin | LCD_D5_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : LCD_Screen_Pin */
+	GPIO_InitStruct.Pin = LCD_Screen_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(LCD_Screen_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pin : STM_UserButton_Pin */
+	GPIO_InitStruct.Pin = STM_UserButton_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	HAL_GPIO_Init(STM_UserButton_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : PD12 PD13 PD14 PD15 */
-	GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+	/*Configure GPIO pins : STM_Green_Pin STM_Orange_Pin STM_Red_Pin STM_Blue_Pin */
+	GPIO_InitStruct.Pin = STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -316,6 +345,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	{
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
 		{
+			LCD_ToggleScreen();
+			
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 			++_led;
 			if (_led > 9) _led = 0;
@@ -343,7 +374,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
-	  /* User can add his own implementation to report the HAL error return state */
+			/* User can add his own implementation to report the HAL error return state */
 
 	/* USER CODE END Error_Handler_Debug */
 }
@@ -359,9 +390,9 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
 	/* USER CODE BEGIN 6 */
-	  /* User can add his own implementation to report the file name and line number,
-	     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
+			/* User can add his own implementation to report the file name and line number,
+			   tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 

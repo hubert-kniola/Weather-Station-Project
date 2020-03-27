@@ -2,230 +2,234 @@
 
 #define RGB_MAX_REGISTER_VAL 999
 
-RGB_Handler h;
+uint32_t _CCR1; /* RED */
+uint32_t _CCR2; /* GREEN */
+uint32_t _CCR3; /* BLUE */
+	
+uint16_t _state;
+RGB_Mode _mode;
 
 void RGB_Init()
 {
-	h._CCR1 = 0;
-	h._CCR2 = 0;
-	h._CCR3 = 0;
-	h._state = 0;
-	h._mode = NONE;
+	_CCR1 = 0;
+	_CCR2 = 0;
+	_CCR3 = 0;
+	_state = 0;
+	_mode = NONE;
 }
 void RGB_SetWhite()
 {
-	h._mode = SW;
+	_mode = White;
 	
-	h._CCR1 = RGB_MAX_REGISTER_VAL;
-	h._CCR2 = RGB_MAX_REGISTER_VAL;
-	h._CCR3 = RGB_MAX_REGISTER_VAL;
+	_CCR1 = RGB_MAX_REGISTER_VAL;
+	_CCR2 = RGB_MAX_REGISTER_VAL;
+	_CCR3 = RGB_MAX_REGISTER_VAL;
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_SetRed()
 {
-	h._mode = SR;
+	_mode = Red;
 	
-	h._CCR1 = RGB_MAX_REGISTER_VAL;
-	h._CCR2 = 0;
-	h._CCR3 = 0;
+	_CCR1 = RGB_MAX_REGISTER_VAL;
+	_CCR2 = 0;
+	_CCR3 = 0;
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_SetGreen()
 {
-	h._mode = SG;
+	_mode = Green;
 	
-	h._CCR1 = 0;
-	h._CCR2 = RGB_MAX_REGISTER_VAL;
-	h._CCR3 = 0;
+	_CCR1 = 0;
+	_CCR2 = RGB_MAX_REGISTER_VAL;
+	_CCR3 = 0;
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_SetBlue()
 {
-	h._mode = SB;
+	_mode = Blue;
 	
-	h._CCR1 = 0;
-	h._CCR2 = 0;
-	h._CCR3 = RGB_MAX_REGISTER_VAL;
+	_CCR1 = 0;
+	_CCR2 = 0;
+	_CCR3 = RGB_MAX_REGISTER_VAL;
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_SetBlack()
 {
-	h._mode = SN;
+	_mode = Disabled;
 	
-	h._CCR1 = 0;
-	h._CCR2 = 0;
-	h._CCR3 = 0;
+	_CCR1 = 0;
+	_CCR2 = 0;
+	_CCR3 = 0;
 	
 	_RGB_UpdateRegisters();
 }
 
 void _RGB_UpdateRegisters()
 {
-	if (h._CCR1 > RGB_MAX_REGISTER_VAL) h._CCR1 = RGB_MAX_REGISTER_VAL;
-	if (h._CCR2 > RGB_MAX_REGISTER_VAL) h._CCR2 = RGB_MAX_REGISTER_VAL;
-	if (h._CCR3 > RGB_MAX_REGISTER_VAL) h._CCR3 = RGB_MAX_REGISTER_VAL;
+	if (_CCR1 > RGB_MAX_REGISTER_VAL) _CCR1 = RGB_MAX_REGISTER_VAL;
+	if (_CCR2 > RGB_MAX_REGISTER_VAL) _CCR2 = RGB_MAX_REGISTER_VAL;
+	if (_CCR3 > RGB_MAX_REGISTER_VAL) _CCR3 = RGB_MAX_REGISTER_VAL;
 	
-	if (h._CCR1 < 0) h._CCR1 = 0;
-	if (h._CCR2 < 0) h._CCR2 = 0;
-	if (h._CCR3 < 0) h._CCR3 = 0;
+	if (_CCR1 < 0) _CCR1 = 0;
+	if (_CCR2 < 0) _CCR2 = 0;
+	if (_CCR3 < 0) _CCR3 = 0;
 	
-	TIM2->CCR1 = h._CCR1;
-	TIM2->CCR2 = h._CCR2;
-	TIM2->CCR3 = h._CCR3;
+	TIM2->CCR1 = _CCR1;
+	TIM2->CCR2 = _CCR2;
+	TIM2->CCR3 = _CCR3;
 	
-	++h._state;
-	if (h._state > RGB_MAX_REGISTER_VAL - 3) h._state = 0;
+	++_state;
+	if (_state > RGB_MAX_REGISTER_VAL - 3) _state = 0;
 }
 
 void RGB_Rainbow()
 {
-	if (h._mode != RR) h._state = 0;
-	h._mode = RR;
+	if (_mode != Rainbow) _state = 0;
+	_mode = Rainbow;
 	
-	switch (h._state)
+	switch (_state)
 	{
 	case 0: 
 		{
-			h._CCR1 = RGB_MAX_REGISTER_VAL;
-			h._CCR2 = 0;
-			h._CCR3 = 0;
+			_CCR1 = RGB_MAX_REGISTER_VAL;
+			_CCR2 = 0;
+			_CCR3 = 0;
 			break;
 		}
 	case (int)(RGB_MAX_REGISTER_VAL / 3): 
 		{
-			h._CCR1 = 0;
-			h._CCR2 = RGB_MAX_REGISTER_VAL;
-			h._CCR3 = 0;
+			_CCR1 = 0;
+			_CCR2 = RGB_MAX_REGISTER_VAL;
+			_CCR3 = 0;
 			break;
 		}
 	case (int)(RGB_MAX_REGISTER_VAL * 2 / 3): 
 		{
-			h._CCR1 = 0;
-			h._CCR2 = 0;
-			h._CCR3 = RGB_MAX_REGISTER_VAL;
+			_CCR1 = 0;
+			_CCR2 = 0;
+			_CCR3 = RGB_MAX_REGISTER_VAL;
 			break;
 		}
 	default: 
 		{
-			if (h._state > 0 && (h._state < RGB_MAX_REGISTER_VAL / 3))
+			if (_state > 0 && (_state < RGB_MAX_REGISTER_VAL / 3))
 			{
-				h._CCR1 -= 3;
-				h._CCR2 += 3;
-				h._CCR3 = 0;
+				_CCR1 -= 3;
+				_CCR2 += 3;
+				_CCR3 = 0;
 			}
-			else if ((h._state > RGB_MAX_REGISTER_VAL / 3) && (h._state < RGB_MAX_REGISTER_VAL * 2 / 3))
+			else if ((_state > RGB_MAX_REGISTER_VAL / 3) && (_state < RGB_MAX_REGISTER_VAL * 2 / 3))
 			{
-				h._CCR1 = 0;
-				h._CCR2 -= 3;
-				h._CCR3 += 3;
+				_CCR1 = 0;
+				_CCR2 -= 3;
+				_CCR3 += 3;
 			}
-			else if ((h._state > RGB_MAX_REGISTER_VAL * 2 / 3) && (h._state < RGB_MAX_REGISTER_VAL))
+			else if ((_state > RGB_MAX_REGISTER_VAL * 2 / 3) && (_state < RGB_MAX_REGISTER_VAL))
 			{
-				h._CCR1 += 3;
-				h._CCR2 = 0;
-				h._CCR3 -= 3;
+				_CCR1 += 3;
+				_CCR2 = 0;
+				_CCR3 -= 3;
 			}
 		}
 	}
 	_RGB_UpdateRegisters();
-	
 }
 
 void RGB_BlinkRed()
 {
-	if (h._mode != BR) h._state = 0;
-	h._mode = BR;
+	if (_mode != BlinkRed) _state = 0;
+	_mode = BlinkRed;
 	
-	h._CCR2 = 0;
-	h._CCR3 = 0;
+	_CCR2 = 0;
+	_CCR3 = 0;
 	
-	if (h._state == 0)
+	if (_state == 0)
 	{
-		h._CCR1 = 0;	
+		_CCR1 = 0;	
 	}
-	else if (h._state < RGB_MAX_REGISTER_VAL / 2)
+	else if (_state < RGB_MAX_REGISTER_VAL / 2)
 	{
-		h._CCR1 += 2;
+		_CCR1 += 2;
 	}
 	else
 	{
-		h._CCR1 -= 2;
+		_CCR1 -= 2;
 	}
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_BlinkGreen()
 {
-	if (h._mode != BG) h._state = 0;
-	h._mode = BG;
+	if (_mode != BlinkGreen) _state = 0;
+	_mode = BlinkGreen;
 	
-	h._CCR1 = 0;
-	h._CCR3 = 0;
+	_CCR1 = 0;
+	_CCR3 = 0;
 	
-	if (h._state == 0)
+	if (_state == 0)
 	{
-		h._CCR2 = 0;	
+		_CCR2 = 0;	
 	}
-	else if (h._state < RGB_MAX_REGISTER_VAL / 2)
+	else if (_state < RGB_MAX_REGISTER_VAL / 2)
 	{
-		h._CCR2 += 2;
+		_CCR2 += 2;
 	}
 	else
 	{
-		h._CCR2 -= 2;
+		_CCR2 -= 2;
 	}
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_BlinkBlue()
 {
-	if (h._mode != BB) h._state = 0;
-	h._mode = BB;
+	if (_mode != BlinkBlue) _state = 0;
+	_mode = BlinkBlue;
 	
-	h._CCR1 = 0;
-	h._CCR2 = 0;
+	_CCR1 = 0;
+	_CCR2 = 0;
 	
-	if (h._state == 0)
+	if (_state == 0)
 	{
-		h._CCR3 = 0;	
+		_CCR3 = 0;	
 	}
-	else if (h._state < RGB_MAX_REGISTER_VAL / 2)
+	else if (_state < RGB_MAX_REGISTER_VAL / 2)
 	{
-		h._CCR3 += 2;
+		_CCR3 += 2;
 	}
 	else
 	{
-		h._CCR3 -= 2;
+		_CCR3 -= 2;
 	}
 	
 	_RGB_UpdateRegisters();
 }
 void RGB_BlinkWhite()
 {
-	if (h._mode != BW) h._state = 0;
-	h._mode = BW;
+	if (_mode != BlinkWhite) _state = 0;
+	_mode = BlinkWhite;
 	
-	if (h._state == 0)
+	if (_state == 0)
 	{
-		h._CCR1 = 0;	
-		h._CCR2 = 0;	
-		h._CCR3 = 0;	
+		_CCR1 = 0;	
+		_CCR2 = 0;	
+		_CCR3 = 0;	
 	}
-	else if (h._state < RGB_MAX_REGISTER_VAL / 2)
+	else if (_state < RGB_MAX_REGISTER_VAL / 2)
 	{
-		h._CCR1 += 2;
-		h._CCR2 += 2;
-		h._CCR3 += 2;
+		_CCR1 += 2;
+		_CCR2 += 2;
+		_CCR3 += 2;
 	}
 	else
 	{
-		h._CCR1 -= 2;
-		h._CCR2 -= 2;
-		h._CCR3 -= 2;
+		_CCR1 -= 2;
+		_CCR2 -= 2;
+		_CCR3 -= 2;
 	}
 	
 	_RGB_UpdateRegisters();
@@ -235,8 +239,8 @@ void _RGB_Test(uint8_t choice)
 {
 	switch (choice)
 	{
-	case 0: RGB_SetWhite(); break;
-	case 1: RGB_SetBlack(); break;
+	case 0: RGB_SetBlack(); break;
+	case 1: RGB_SetWhite(); break;
 	case 2: RGB_SetRed(); break;
 	case 3: RGB_SetGreen(); break;
 	case 4: RGB_SetBlue(); break;

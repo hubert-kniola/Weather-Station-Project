@@ -243,9 +243,15 @@
     <ClCompile Include="SP_RGB.c">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="SP_LCD.c">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SP_RGB.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SP_LCD.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

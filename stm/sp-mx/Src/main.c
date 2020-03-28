@@ -25,7 +25,6 @@
 /* USER CODE BEGIN Includes */
 #include "SP_RGB.h"
 #include "SP_LCD.h"
-#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,7 +114,6 @@ int main(void)
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
-		
 	}
 	/* USER CODE END 3 */
 }
@@ -345,7 +343,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	{
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
 		{
-			LCD_ToggleScreen();
+			LCD_ToggleBackgroundLED();
 			
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 			++_led;

@@ -9,7 +9,7 @@ uint32_t _CCR3; /* BLUE */
 uint16_t _state;
 RGB_Mode _mode;
 
-void RGB_Init()
+void RGB_Init(void)
 {
 	_CCR1 = 0;
 	_CCR2 = 0;
@@ -17,7 +17,7 @@ void RGB_Init()
 	_state = 0;
 	_mode = NONE;
 }
-void RGB_SetWhite()
+void RGB_SetWhite(void)
 {
 	_mode = White;
 	
@@ -27,7 +27,7 @@ void RGB_SetWhite()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_SetRed()
+void RGB_SetRed(void)
 {
 	_mode = Red;
 	
@@ -37,7 +37,7 @@ void RGB_SetRed()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_SetGreen()
+void RGB_SetGreen(void)
 {
 	_mode = Green;
 	
@@ -47,7 +47,7 @@ void RGB_SetGreen()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_SetBlue()
+void RGB_SetBlue(void)
 {
 	_mode = Blue;
 	
@@ -57,7 +57,7 @@ void RGB_SetBlue()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_SetBlack()
+void RGB_SetBlack(void)
 {
 	_mode = Disabled;
 	
@@ -68,7 +68,7 @@ void RGB_SetBlack()
 	_RGB_UpdateRegisters();
 }
 
-void _RGB_UpdateRegisters()
+void _RGB_UpdateRegisters(void)
 {
 	if (_CCR1 > RGB_MAX_REGISTER_VAL) _CCR1 = RGB_MAX_REGISTER_VAL;
 	if (_CCR2 > RGB_MAX_REGISTER_VAL) _CCR2 = RGB_MAX_REGISTER_VAL;
@@ -86,7 +86,7 @@ void _RGB_UpdateRegisters()
 	if (_state > RGB_MAX_REGISTER_VAL - 3) _state = 0;
 }
 
-void RGB_Rainbow()
+void RGB_Rainbow(void)
 {
 	if (_mode != Rainbow) _state = 0;
 	_mode = Rainbow;
@@ -139,7 +139,7 @@ void RGB_Rainbow()
 	_RGB_UpdateRegisters();
 }
 
-void RGB_BlinkRed()
+void RGB_BlinkRed(void)
 {
 	if (_mode != BlinkRed) _state = 0;
 	_mode = BlinkRed;
@@ -162,7 +162,7 @@ void RGB_BlinkRed()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_BlinkGreen()
+void RGB_BlinkGreen(void)
 {
 	if (_mode != BlinkGreen) _state = 0;
 	_mode = BlinkGreen;
@@ -185,7 +185,7 @@ void RGB_BlinkGreen()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_BlinkBlue()
+void RGB_BlinkBlue(void)
 {
 	if (_mode != BlinkBlue) _state = 0;
 	_mode = BlinkBlue;
@@ -208,7 +208,7 @@ void RGB_BlinkBlue()
 	
 	_RGB_UpdateRegisters();
 }
-void RGB_BlinkWhite()
+void RGB_BlinkWhite(void)
 {
 	if (_mode != BlinkWhite) _state = 0;
 	_mode = BlinkWhite;

@@ -36,6 +36,8 @@
 #define LCD_COLUMNS 20
 #define LCD_ROWS 4
 
+#define LCD_PORT GPIOE
+
 uint16_t _rs;               // LOW: funkcja,  HIGH: dane
 uint16_t _rw;               // LOW: zapis,  HIGH: odczyt
 uint16_t _enable;
@@ -50,14 +52,12 @@ uint8_t _rowOffsets[4];
 uint8_t _currentRow;
 uint8_t _currentCol;
 
-GPIO_TypeDef *_port;
 
 void LCD_Init(void)
 {
 	_rs = GPIO_PIN_4;
 	_rw = GPIO_PIN_5;
 	_enable = GPIO_PIN_6;
-	_port = GPIOE;
   
 	_data[0] = GPIO_PIN_0;
 	_data[1] = GPIO_PIN_1;
@@ -66,15 +66,16 @@ void LCD_Init(void)
 
 	_displayFunction = LCD_4BITMODE | LCD_2LINE | LCD_5x8DOTS;
   
+	/* Start z wlaczonym podswietleniem */
 	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
 	_LCD_SetRowOffsets(0x00, 0x40, 0x00 + LCD_COLUMNS, 0x40 + LCD_COLUMNS);  
 
 	/* Opoznienia sa w celu ustablizowania napiec na diodach ekranu */
 	HAL_Delay(50); 
 
-	HAL_GPIO_WritePin(_port, _rs, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(_port, _enable, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(_port, _rw, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_PORT, _rs, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_PORT, _enable, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_PORT, _rw, GPIO_PIN_RESET);
 	
 	/* procedura inicjalizacji dzialania na 4 bitach danych */
 	_LCD_WriteData(0x03);
@@ -99,6 +100,8 @@ void LCD_Init(void)
 	
 	_currentRow = 0;
 	_currentCol = 0;
+	
+	LCD_PrintCentered("booting...");
 }
 
 void LCD_ToggleBackgroundLED(void)
@@ -118,12 +121,14 @@ void LCD_ClearScreen(void)
 {
 	_LCD_SendCommand(LCD_CLEARDISPLAY); 
 	HAL_Delay(2); 
+	LCD_ResetCursor();
 }
 
 void LCD_ResetCursor(void)
 {
 	_LCD_SendCommand(LCD_RETURNHOME);
 	HAL_Delay(2);
+	LCD_SetCursor(0, 0);
 }
 
 void LCD_SetCursor(uint8_t col, uint8_t row)
@@ -294,10 +299,10 @@ void _LCD_SendData(uint8_t value, bool moveCursor) {
 }
 
 void _LCD_SendByteWithState(uint8_t value, GPIO_PinState mode) {
-	HAL_GPIO_WritePin(_port, _rs, mode);
+	HAL_GPIO_WritePin(LCD_PORT, _rs, mode);
 
 	if (_rw != 255) { 
-		HAL_GPIO_WritePin(_port, _rw, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LCD_PORT, _rw, GPIO_PIN_RESET);
 	}
   
 	_LCD_WriteData(value >> 4);
@@ -305,18 +310,18 @@ void _LCD_SendByteWithState(uint8_t value, GPIO_PinState mode) {
 }
 
 void _LCD_EnableSignal(void) {
-	HAL_GPIO_WritePin(_port, _enable, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_PORT, _enable, GPIO_PIN_RESET);
 	HAL_Delay(1);    
-	HAL_GPIO_WritePin(_port, _enable, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LCD_PORT, _enable, GPIO_PIN_SET);
 	HAL_Delay(1);
-	HAL_GPIO_WritePin(_port, _enable, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_PORT, _enable, GPIO_PIN_RESET);
 	HAL_Delay(1);
 }
 
 void _LCD_WriteData(uint8_t value) {
 	for (int i = 0; i < 4; i++) {
 		/* Little Endian */
-		HAL_GPIO_WritePin(_port, _data[i], ((value >> i) & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LCD_PORT, _data[i], ((value >> i) & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	}
 
 	_LCD_EnableSignal();

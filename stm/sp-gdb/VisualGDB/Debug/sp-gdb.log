@@ -1,7 +1,6 @@
-﻿  main.c
-  SP_LCD.c
+﻿  SP_THS.c
   Linking VisualGDB/Debug/sp-gdb...
   ------------------- Memory utilization report -------------------
-  Used FLASH: 13KB out of 1024KB (1%) [+84]
-  Used SRAM: 232 bytes out of 128KB (0%)
+  Used FLASH: 18KB out of 1024KB (1%)
+  Used SRAM: 428 bytes out of 128KB (0%)
   Used CCMRAM: 0 bytes out of 64KB (0%)

@@ -1,5 +1,7 @@
-USER -> Update [PA0-WKUP]: EXTI0
-LED -> Info [PD12-15]: GPIO_Output
-TIM2, 1 kHz -> RGB_LED [PA5-CH1;PA1-CH2;PA2-CH3]: prescaler = 83, period = 999
-TIM3, 2 Hz -> Update []: prescaler = 59999, period = 699 
-LCD -> Info [PE0-6; PC15]: GPIO_Output
+USER 		-> Update 	[PA0-WKUP]			: EXTI0
+LED 		-> Info 	[PD12-15]			: GPIO_Outputs
+LCD 		-> Info 	[PE0-6; PC15]			: GPIO_Outputs
+THS		-> Sensor	[PC0-1]				: GPIO_(Out/In)
+TIM2, 1 kHz 	-> RGB_LED 	[PA5-CH1;PA1-CH2;PA2-CH3]	: prescaler = 83, period = 999
+TIM3, 1/30 Hz 	-> Update 	[]				: prescaler = 41999, period = 59999 
+TIM4, 500 kHz 	-> THS Timer 	[]				: pre = 41, per = 3

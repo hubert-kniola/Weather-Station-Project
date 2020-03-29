@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include "SP_RGB.h"
 #include "SP_LCD.h"
+#include "SP_THS.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,6 +45,7 @@
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN PV */
 uint8_t _led = 0;
@@ -54,9 +56,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim);
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,23 +97,51 @@ int main(void)
 	MX_GPIO_Init();
 	MX_TIM2_Init();
 	MX_TIM3_Init();
+	MX_TIM4_Init();
 	/* USER CODE BEGIN 2 */
 	RGB_Init();
 	LCD_Init();
-	
+	THS_Init(&htim4);
+
 	HAL_TIM_Base_Start_IT(&htim2); /* RGB Tim Init */
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-	
-	HAL_TIM_Base_Start_IT(&htim3); /* System Update Tim Init */
-  /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-	
+	HAL_TIM_Base_Start_IT(&htim3); /* System Update Tim Init */
+	HAL_TIM_Base_Start(&htim4);
+
+	/* USER CODE END 2 */
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
+	int i = 0;
+	LCD_ClearScreen();
 	while (1)
 	{
+		LCD_SetCursor(0, 0);
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 1);
+		
+		THS_InitConn(THS_In);
+		uint16_t wyn1 = THS_ReadByte(THS_In);
+		uint8_t wyn2 = THS_ReadByte(THS_In);
+		uint16_t wyn3 = THS_ReadByte(THS_In);
+		uint8_t wyn4 = THS_ReadByte(THS_In);
+		uint8_t wyn5 = THS_ReadByte(THS_In);
+		
+		float rh = (float)((wyn1 << 8) | wyn2)/1000.f;
+		float temp = (float)((wyn3 << 8) | wyn4)/1000.f;
+		
+		uint8_t ccr = wyn1 | wyn2 | wyn3 | wyn4;
+		
+		
+		
+		LCD_Printf("R%d-%d %d", (int)rh, (uint8_t)wyn1, wyn2);
+		LCD_NextLine();
+		LCD_Printf("T%d-%d %d", (int)temp, (uint8_t)wyn3, wyn4);
+		
+		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);
+		HAL_Delay(2000);
 		/* USER CODE END WHILE */
 
 		/* USER CODE BEGIN 3 */
@@ -246,9 +277,9 @@ static void MX_TIM3_Init(void)
 
 	/* USER CODE END TIM3_Init 1 */
 	htim3.Instance = TIM3;
-	htim3.Init.Prescaler = 59999;
+	htim3.Init.Prescaler = 41999;
 	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim3.Init.Period = 699;
+	htim3.Init.Period = 59999;
 	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -269,6 +300,51 @@ static void MX_TIM3_Init(void)
 	/* USER CODE BEGIN TIM3_Init 2 */
 
 	/* USER CODE END TIM3_Init 2 */
+
+}
+
+/**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+	/* USER CODE BEGIN TIM4_Init 0 */
+
+	/* USER CODE END TIM4_Init 0 */
+
+	TIM_ClockConfigTypeDef sClockSourceConfig = { 0 };
+	TIM_MasterConfigTypeDef sMasterConfig = { 0 };
+
+	/* USER CODE BEGIN TIM4_Init 1 */
+
+	/* USER CODE END TIM4_Init 1 */
+	htim4.Instance = TIM4;
+	htim4.Init.Prescaler = 84 - 1;
+	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim4.Init.Period = 0xFFFF - 1;
+	htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+	if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+	if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+	if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	/* USER CODE BEGIN TIM4_Init 2 */
+
+	/* USER CODE END TIM4_Init 2 */
 
 }
 
@@ -295,7 +371,7 @@ static void MX_GPIO_Init(void)
 		GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
-	HAL_GPIO_WritePin(LCD_Screen_GPIO_Port, LCD_Screen_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, LCD_Screen_Pin | THS_Sensor1_Pin | THS_Sensor2_Pin, GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD, STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin, GPIO_PIN_RESET);
@@ -312,9 +388,16 @@ static void MX_GPIO_Init(void)
 	/*Configure GPIO pin : LCD_Screen_Pin */
 	GPIO_InitStruct.Pin = LCD_Screen_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(LCD_Screen_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : THS_Sensor1_Pin THS_Sensor2_Pin */
+	GPIO_InitStruct.Pin = THS_Sensor1_Pin | THS_Sensor2_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
 	/*Configure GPIO pin : STM_UserButton_Pin */
 	GPIO_InitStruct.Pin = STM_UserButton_Pin;
@@ -337,6 +420,19 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 /* SP Callback Definitions */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM2)
+	{
+		_RGB_Test(_led);
+	}
+	else if (htim->Instance == TIM3)
+	{
+		
+	}
+}
+
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 	if (GPIO_Pin == GPIO_PIN_0)
@@ -344,23 +440,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
 		{
 			LCD_ToggleBackgroundLED();
-			
+
 			HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 			++_led;
 			if (_led > 9) _led = 0;
+			
+			LCD_Print("KURWAAAAA");
 		}
-	}
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	if (htim->Instance == TIM2) /* RGB Led timer callback */
-	{
-		_RGB_Test(_led);
-	}
-	else if(htim->Instance == TIM3) /* System update timer callback */
-	{
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	}
 }
 /* USER CODE END 4 */
@@ -372,7 +458,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
 	/* USER CODE BEGIN Error_Handler_Debug */
-			/* User can add his own implementation to report the HAL error return state */
+							/* User can add his own implementation to report the HAL error return state */
 
 	/* USER CODE END Error_Handler_Debug */
 }
@@ -388,8 +474,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 { 
 	/* USER CODE BEGIN 6 */
-			/* User can add his own implementation to report the file name and line number,
-			   tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+							/* User can add his own implementation to report the file name and line number,
+							   tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 	/* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

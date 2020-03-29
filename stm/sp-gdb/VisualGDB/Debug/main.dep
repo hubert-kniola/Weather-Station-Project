@@ -37,7 +37,8 @@ VisualGDB/Debug/main.o: C:/Users/bk/Desktop/P14/stm/sp-mx/Src/main.c \
  ../sp-mx/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  C:/Users/bk/Desktop/P14/stm/sp-gdb/SP_RGB.h \
  C:/Users/bk/Desktop/P14/stm/sp-gdb/SP_LCD.h \
- c:\sysgcc\arm-eabi\lib\gcc\arm-none-eabi\9.2.1\include\stdbool.h
+ c:\sysgcc\arm-eabi\lib\gcc\arm-none-eabi\9.2.1\include\stdbool.h \
+ C:/Users/bk/Desktop/P14/stm/sp-gdb/SP_THS.h
 
 ../sp-mx/Inc/main.h:
 
@@ -116,3 +117,5 @@ C:/Users/bk/Desktop/P14/stm/sp-gdb/SP_RGB.h:
 C:/Users/bk/Desktop/P14/stm/sp-gdb/SP_LCD.h:
 
 c:\sysgcc\arm-eabi\lib\gcc\arm-none-eabi\9.2.1\include\stdbool.h:
+
+C:/Users/bk/Desktop/P14/stm/sp-gdb/SP_THS.h:

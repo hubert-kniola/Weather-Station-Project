@@ -95,8 +95,10 @@
     <ClCompile Include="..\sp-mx\Drivers\STM32F4xx_HAL_Driver\Src\stm32f4xx_hal_gpio.c" />
     <ClCompile Include="SP_LCD.c" />
     <ClCompile Include="SP_RGB.c" />
+    <ClCompile Include="SP_THS.c" />
     <ClInclude Include="SP_LCD.h" />
     <ClInclude Include="SP_RGB.h" />
+    <ClInclude Include="SP_THS.h" />
     <None Include="stm32.props" />
     <ClCompile Include="$(BSP_ROOT)\STM32F4xxxx\StartupFiles\startup_stm32f407xx.c" />
     <ClInclude Include="..\sp-mx\Inc\stm32f4xx_it.h" />

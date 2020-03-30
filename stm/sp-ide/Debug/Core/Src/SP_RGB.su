@@ -1,0 +1,13 @@
+SP_RGB.c:12:6:RGB_Init	4	static
+SP_RGB.c:20:6:RGB_SetWhite	8	static
+SP_RGB.c:30:6:RGB_SetRed	8	static
+SP_RGB.c:40:6:RGB_SetGreen	8	static
+SP_RGB.c:50:6:RGB_SetBlue	8	static
+SP_RGB.c:60:6:RGB_SetBlack	8	static
+SP_RGB.c:71:6:_RGB_UpdateRegisters	4	static
+SP_RGB.c:89:6:RGB_Rainbow	8	static
+SP_RGB.c:142:6:RGB_BlinkRed	8	static
+SP_RGB.c:165:6:RGB_BlinkGreen	8	static
+SP_RGB.c:188:6:RGB_BlinkBlue	8	static
+SP_RGB.c:211:6:RGB_BlinkWhite	8	static
+SP_RGB.c:238:6:_RGB_Test	16	static

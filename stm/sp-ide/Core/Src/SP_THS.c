@@ -118,7 +118,7 @@ uint8_t _THS_CCR_Acceptable(uint8_t ccrIn, uint8_t ccrAcc) {
 }
 
 /* Funkcja wymaga jako argumentu tablicy conajmniej 2 elementowej else panic */
-uint8_t THS_ReadData(THS_Sensor sensor, float *data) {
+uint8_t THS_ReadData(THS_Sensor sensor, float data[]) {
 	uint16_t pin = (sensor == THS_In) ? _pin1 : _pin2;
 
 	if (!_THS_InitConn(pin))

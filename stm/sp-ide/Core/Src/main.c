@@ -139,7 +139,6 @@ int main(void) {
 
 		uint8_t success = THS_ReadData(THS_In, data);
 
-		LCD_ClearScreen();
 
 		if (success) {
 			LCD_PrintTempInfo(data, data);
@@ -152,7 +151,7 @@ int main(void) {
 		LCD_SetCursor(0, 3);
 		LCD_PrintCentered(time);
 
-		HAL_Delay(3000);
+		HAL_Delay(1000);
 
 		/* USER CODE END WHILE */
 

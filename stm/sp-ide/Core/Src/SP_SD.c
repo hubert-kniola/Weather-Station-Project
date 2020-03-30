@@ -60,7 +60,8 @@ void SD_GetDateTime(char date[], char time[]) {
  * 		"temper" : 24,
  * 		"humidi" : 35,
  * 		"locati" : "PL",
- * 		"time"	 : "12:03:30"
+ * 		"time"	 : "12:03:30",
+ * 		"date"   : "03.30.20"
  * }
  */
 uint8_t SD_WriteJSON(float *data) {

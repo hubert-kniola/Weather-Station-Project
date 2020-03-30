@@ -12,6 +12,7 @@ typedef enum
 void THS_Init();
 void THS_Delay(uint16_t);
 void THS_ErrorClock(void);
+float* THS_NewContainer(void);
 
 uint8_t THS_ReadData(THS_Sensor, float*);
 

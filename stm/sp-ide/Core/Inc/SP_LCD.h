@@ -18,6 +18,7 @@ void LCD_Printf(const char[], ...);
 void LCD_PrintfDelayed(uint16_t, const char[], ...);
 void LCD_PrintCentered(const char[]);
 void LCD_PrintDegree(void);
+void LCD_PrintTempInfo(float*, float*);
 
 void LCD_DisableBlink(void);
 void LCD_EnableBlink(void);

@@ -26,6 +26,9 @@
 #include "SP_RGB.h"
 #include "SP_LCD.h"
 #include "SP_THS.h"
+#include "SP_SD.h"
+
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -43,6 +46,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+SPI_HandleTypeDef hspi1;
+
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
@@ -54,6 +59,7 @@ uint8_t _led = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
@@ -93,6 +99,7 @@ int main(void) {
 
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
+	MX_SPI1_Init();
 	MX_TIM2_Init();
 	MX_TIM3_Init();
 	MX_TIM4_Init();
@@ -100,6 +107,7 @@ int main(void) {
 	RGB_Init();
 	LCD_Init();
 	THS_Init();
+	SD_Init();
 
 	HAL_TIM_Base_Start_IT(&htim2); /* RGB Tim Init */
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
@@ -116,19 +124,18 @@ int main(void) {
 
 	while (1) {
 
-		LCD_SetCursor(0, 0);
+		LCD_ResetCursor();
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 1);
 
-		float data[2];
+		float *data = THS_NewContainer();
 
-		if (THS_ReadData(THS_In, &data)) {
-			LCD_Printf("T:%.0f", data[0]);
-			LCD_PrintDegree();
-			LCD_NextLine("C");
-			LCD_Printf("H:%.0f%%", data[1]);
+		if (THS_ReadData(THS_In, data)) {
+			LCD_PrintTempInfo(data, NULL);
 		} else {
 			LCD_PrintCentered("ERROR");
 		}
+
+		free(data);
 
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);
 		HAL_Delay(1500);
@@ -177,6 +184,42 @@ void SystemClock_Config(void) {
 	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
 		Error_Handler();
 	}
+}
+
+/**
+ * @brief SPI1 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_SPI1_Init(void) {
+
+	/* USER CODE BEGIN SPI1_Init 0 */
+
+	/* USER CODE END SPI1_Init 0 */
+
+	/* USER CODE BEGIN SPI1_Init 1 */
+
+	/* USER CODE END SPI1_Init 1 */
+	/* SPI1 parameter configuration*/
+	hspi1.Instance = SPI1;
+	hspi1.Init.Mode = SPI_MODE_MASTER;
+	hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+	hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+	hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+	hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+	hspi1.Init.NSS = SPI_NSS_SOFT;
+	hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+	hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+	hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+	hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+	hspi1.Init.CRCPolynomial = 10;
+	if (HAL_SPI_Init(&hspi1) != HAL_OK) {
+		Error_Handler();
+	}
+	/* USER CODE BEGIN SPI1_Init 2 */
+
+	/* USER CODE END SPI1_Init 2 */
+
 }
 
 /**
@@ -340,6 +383,7 @@ static void MX_GPIO_Init(void) {
 	__HAL_RCC_GPIOH_CLK_ENABLE();
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOE,
@@ -352,7 +396,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD,
-	STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin,
+			STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : LCD_D6_Pin LCD_D7_Pin LCD_RS_Pin LCD_RW_Pin

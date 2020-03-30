@@ -36,10 +36,13 @@
 #define LCD_COLUMNS 20
 #define LCD_ROWS 4
 
-#define LCD_PORT GPIOE
+#define DEG_CHAR 7
+#define TIN_CHAR 6
+#define TOUT_CHAR 5
+#define HIN_CHAR 4
+#define HOUT_CHAR 3
 
-uint8_t _degreeChar[8] = { 0b01100, 0b10010, 0b01100, 0b00000, 0b00000, 0b00000,
-		0b00000 };
+#define LCD_PORT GPIOE
 
 uint16_t _rs;               // LOW: funkcja,  HIGH: dane
 uint16_t _rw;               // LOW: zapis,  HIGH: odczyt
@@ -104,7 +107,25 @@ void LCD_Init(void) {
 
 	LCD_PrintCentered("booting...");
 
-	LCD_DefineCustomChar(0, _degreeChar);
+	uint8_t char7[8] = { 0b11000, 0b11000, 0b00110, 0b01001, 0b01000, 0b01000,
+			0b01001, 0b00110 };
+	LCD_DefineCustomChar(7, char7); /* Stopnie */
+
+	uint8_t char6[8] = { 0b11100, 0b01000, 0b01001, 0b00000, 0b01000, 0b01001,
+			0b11100, 0b01000 };
+	LCD_DefineCustomChar(6, char6); /* Temp IN */
+
+	uint8_t char5[8] = { 0b11100, 0b01000, 0b01001, 0b00000, 0b01000, 0b11101,
+			0b01000, 0b01000 };
+	LCD_DefineCustomChar(5, char5); /* Temp OUT */
+
+	uint8_t char4[8] = { 0b10100, 0b11100, 0b10101, 0b00000, 0b01000, 0b01001,
+			0b11100, 0b01000 };
+	LCD_DefineCustomChar(4, char4); /* Humid IN */
+
+	uint8_t char3[8] = { 0b10100, 0b11100, 0b10101, 0b00000, 0b01000, 0b11101,
+			0b01000, 0b01000 };
+	LCD_DefineCustomChar(3, char3); /* Humid OUT */
 }
 
 void LCD_ToggleBackgroundLED(void) {
@@ -207,10 +228,6 @@ void LCD_Print(const char str[]) {
 	}
 }
 
-void LCD_PrintDegree(void) {
-	_LCD_SendData((0), true);
-}
-
 void LCD_Printf(const char format[], ...) {
 	va_list va;
 	va_start(va, format);
@@ -253,6 +270,51 @@ void LCD_PrintCentered(const char str[]) {
 
 	LCD_SetCursor(_currentCol, _currentRow);
 	LCD_Print(str);
+}
+
+void LCD_PrintTempInfo(float *data1, float *data2) {
+	if (data1 == NULL)
+		return;
+
+	char temp[10], rh[10];
+
+	if (data1[0] < 10.f)
+		sprintf(temp, "\6 %.0f\7", data1[0]);
+	else
+		sprintf(temp, "\6%.0f\7", data1[0]);
+
+	if (data1[1] < 10.f)
+		sprintf(rh, "\4 %.0f%%", data1[1]);
+	else if (data1[1] == 100.f)
+		sprintf(rh, "\499%%");
+	else
+		sprintf(rh, "\4%.0f%%", data1[1]);
+
+	LCD_SetCursor(0, 1);
+	LCD_Print(temp);
+	LCD_SetCursor(0, 2);
+	LCD_Print(rh);
+
+	if (data2 != NULL) {
+		if (data2[0] < 10.f)
+			sprintf(temp, "\5 %.0f\7", data2[0]);
+		else
+			sprintf(temp, "\5%.0f\7", data2[0]);
+
+		if (data2[1] < 10.f)
+			sprintf(rh, "\3 %.0f%%", data2[1]);
+		else if (data2[1] == 100.f)
+			sprintf(rh, "\399%%");
+		else
+			sprintf(rh, "\3%.0f%%", data2[1]);
+
+		LCD_SetCursor(16, 1);
+		LCD_Print(temp);
+		LCD_SetCursor(16, 2);
+		LCD_Print(rh);
+	}
+
+	LCD_NextLine("");
 }
 
 void LCD_NextLine(const char text[]) {

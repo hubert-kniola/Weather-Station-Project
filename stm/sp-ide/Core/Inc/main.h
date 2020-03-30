@@ -93,6 +93,12 @@ void Error_Handler(void);
 #define STM_Red_GPIO_Port GPIOD
 #define STM_Blue_Pin GPIO_PIN_15
 #define STM_Blue_GPIO_Port GPIOD
+#define SD_SCK_Pin GPIO_PIN_3
+#define SD_SCK_GPIO_Port GPIOB
+#define SD_MISO_Pin GPIO_PIN_4
+#define SD_MISO_GPIO_Port GPIOB
+#define SD_MOSI_Pin GPIO_PIN_5
+#define SD_MOSI_GPIO_Port GPIOB
 #define LCD_D4_Pin GPIO_PIN_0
 #define LCD_D4_GPIO_Port GPIOE
 #define LCD_D5_Pin GPIO_PIN_1

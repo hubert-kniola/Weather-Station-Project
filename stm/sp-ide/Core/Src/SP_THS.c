@@ -1,5 +1,6 @@
 #include "SP_THS.h"
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define THS_START_LOW 18000
 #define THS_START_HI 20
@@ -137,14 +138,18 @@ uint8_t THS_ReadData(THS_Sensor sensor, float *data) {
 		float r = (float) ((rh1 << 8) | rh2) / (float) (1 << 8);
 
 		/* Dane spoza zakresu czujnika, musial wystapic blad */
-		if ((0.f > t || t > 50.f) || (0.f > r || r > 100.f))
+		if ((0.f > t || t > 50.f) || (0.f > r || r > 100.f)) {
+			data[0] = 0.f;
+			data[1] = 0.f;
 			return 0;
-
+		}
 		data[0] = t;
 		data[1] = r;
 		return 1;
 	}
 	/* Dane zbyt odbiegają od prawdziwych */
+	data[0] = 0.f;
+	data[1] = 0.f;
 	return 0;
 }
 
@@ -155,4 +160,14 @@ void THS_ErrorClock(void) {
 		_clockCounter = 0;
 	}
 	++_clockCounter;
+}
+
+/* Gdy juz niepotrzebny uzyc free */
+float* THS_NewContainer(void) {
+	float *cont = (float*) malloc(2 * sizeof(float));
+
+	cont[0] = 0.f;
+	cont[1] = 0.f;
+
+	return cont;
 }

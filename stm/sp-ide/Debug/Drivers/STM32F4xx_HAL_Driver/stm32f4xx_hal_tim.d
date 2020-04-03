@@ -29,7 +29,8 @@ Drivers/STM32F4xx_HAL_Driver/stm32f4xx_hal_tim.o: \
  C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rtc_ex.h \
  C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
- C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
+ C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
+ C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
 
 C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 
@@ -90,3 +91,5 @@ C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_D
 C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
 
 C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
+
+C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:

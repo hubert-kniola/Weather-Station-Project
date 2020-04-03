@@ -30,6 +30,7 @@ Core/Src/SP_SD.o: ../Core/Src/SP_SD.c ../Core/Inc/SP_SD.h \
  C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
+ C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Core/Inc/ff.h ../Core/Inc/ffconf.h
 
 ../Core/Inc/SP_SD.h:
@@ -95,6 +96,8 @@ C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_D
 C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
 
 C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
+
+C:/Users/bk/STM32Cube/Repository/STM32Cube_FW_F4_V1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 
 ../Core/Inc/ff.h:
 

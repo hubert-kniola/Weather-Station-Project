@@ -4,5 +4,6 @@
 #include "main.h"
 
 void MENU_Init(void);
+void MENU_HandleKeys(void);
 
 #endif

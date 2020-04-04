@@ -23,6 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "SP_RGB.h"
 #include "SP_LCD.h"
 #include "SP_THS.h"
@@ -31,6 +32,7 @@
 #include "SP_MENU.h"
 
 #include <stdlib.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,7 +42,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define LED(color, state) HAL_GPIO_WritePin(GPIOD, STM_ ## color ## _Pin, GPIO_PIN_ ## state);
 
 /* USER CODE END PD */
 
@@ -61,8 +62,11 @@ TIM_HandleTypeDef htim4;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+
 RTC_TimeTypeDef hTime;
 RTC_DateTypeDef hDate;
+
+uint8_t State = 0; /* 0-Clock state; 1-MenuState */
 
 /* USER CODE END PV */
 
@@ -88,6 +92,30 @@ char send[2] = { 'A', 'T' };
 char postfix[2] = { '\r', '\n' };
 
 char receive[100];
+
+void ClockStateLoop(void) {
+	char date[9], time[9];
+	float data[2];
+
+	SD_RefreshDateTime();
+	SD_GetDateTime(date, time);
+
+	LCD_PrintDateTime(date, time);
+
+	if (THS_ReadData(THS_In, data)) {
+		LCD_PrintTempInfo(data, NULL);
+	}
+
+	LCD_SetCursor(0, 3);
+
+	HAL_UART_Transmit(&huart3, (uint8_t*) send, 2, 10);
+	HAL_UART_Transmit(&huart3, (uint8_t*) postfix, 2, 10);
+
+	HAL_UART_Receive(&huart3, (uint8_t*) receive, 100, 10);
+
+	LCD_PrintCentered(receive);
+	LCD_NextLine("");
+}
 
 /* USER CODE END 0 */
 
@@ -147,33 +175,16 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 
 	LCD_ClearScreen();
-	LED(Green, SET);
+	unsigned long check = 0;
 
 	while (1) {
 
-		char date[9], time[9];
-		float data[2];
+		MENU_HandleKeys();
 
-		SD_RefreshDateTime();
-		SD_GetDateTime(date, time);
-
-		LCD_PrintDateTime(date, time);
-
-		if (THS_ReadData(THS_In, data)) {
-			LCD_PrintTempInfo(data, NULL);
+		if (check++ > 1000000) {
+			ClockStateLoop();
+			check = 0;
 		}
-
-		LCD_SetCursor(0, 3);
-
-		HAL_UART_Transmit(&huart3, (uint8_t*) send, 2, 100);
-		HAL_UART_Transmit(&huart3, (uint8_t*) postfix, 2, 10);
-
-		HAL_UART_Receive(&huart3, (uint8_t*) receive, 100, 100);
-
-		LCD_PrintCentered(receive);
-		LCD_NextLine("");
-
-		HAL_Delay(1000);
 
 		/* USER CODE END WHILE */
 
@@ -528,7 +539,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD,
-			STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin,
+	STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : LCD_D6_Pin LCD_D7_Pin LCD_RS_Pin LCD_RW_Pin
@@ -560,17 +571,17 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(STM_UserButton_GPIO_Port, &GPIO_InitStruct);
 
-	/*Configure GPIO pins : MENU_Btn1_Pin MENU_Btn3_Pin MENU_Btn4_Pin */
-	GPIO_InitStruct.Pin = MENU_Btn1_Pin | MENU_Btn3_Pin | MENU_Btn4_Pin;
+	/*Configure GPIO pin : MENU_Btn1_Pin */
+	GPIO_InitStruct.Pin = MENU_Btn1_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	HAL_GPIO_Init(MENU_Btn1_GPIO_Port, &GPIO_InitStruct);
+
+	/*Configure GPIO pins : MENU_Btn2_Pin MENU_Btn3_Pin MENU_Btn4_Pin */
+	GPIO_InitStruct.Pin = MENU_Btn2_Pin | MENU_Btn3_Pin | MENU_Btn4_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-	/*Configure GPIO pin : MENU_Btn2_Pin */
-	GPIO_InitStruct.Pin = MENU_Btn2_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-	GPIO_InitStruct.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(MENU_Btn2_GPIO_Port, &GPIO_InitStruct);
 
 	/*Configure GPIO pins : STM_Green_Pin STM_Orange_Pin STM_Red_Pin STM_Blue_Pin */
 	GPIO_InitStruct.Pin = STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin

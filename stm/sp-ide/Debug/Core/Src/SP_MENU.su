@@ -1,1 +1,6 @@
-SP_MENU.c:3:6:MENU_Init	4	static
+SP_MENU.c:25:6:MENU_Init	4	static
+SP_MENU.c:29:6:_MENU_UpPressed	4	static
+SP_MENU.c:33:6:_MENU_DownPressed	4	static
+SP_MENU.c:37:6:_MENU_LeftPressed	4	static
+SP_MENU.c:41:6:_MENU_RightPressed	4	static
+SP_MENU.c:45:6:MENU_HandleKeys	8	static

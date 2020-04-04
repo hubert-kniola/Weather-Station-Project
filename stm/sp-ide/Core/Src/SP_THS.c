@@ -2,18 +2,18 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define START_LOW 18000
-#define START_HI 20
-#define RESPONSE 40
-#define SIGNAL_WAIT 60
-#define ERROR_RANGE 10
-#define SECOND 1000
+#define START_LOW 		18000
+#define START_HI 		20
+#define RESPONSE 		40
+#define SIGNAL_WAIT 	60
+#define ERROR_RANGE 	10
+#define SECOND 			1000
 
 /* ----------------- Konfiguracja uzytkownika ------------------- */
 /* Port i piny czujnika */
-#define THS_PORT GPIOC
-#define PIN1 GPIO_PIN_0 /* Wewnetrzny */
-#define PIN2 GPIO_PIN_1 /* Zewnetrzny */
+#define THS_PORT 	GPIOC
+#define PIN1 		GPIO_PIN_0 /* Wewnetrzny */
+#define PIN2 		GPIO_PIN_1 /* Zewnetrzny */
 
 extern TIM_HandleTypeDef htim4; /* Wymagany jest period > 18_000 i czestotliwosc 1 MHz */
 /* ----------------- /Konfiguracja uzytkownika ------------------ */

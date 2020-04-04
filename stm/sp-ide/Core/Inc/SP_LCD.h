@@ -32,6 +32,6 @@ void LCD_AlignRight(void);
 void LCD_EnableAutoscroll(void);
 void LCD_DisableAutoscroll(void);
 void LCD_DefineCustomChar(uint8_t, uint8_t[]);
-void LCD_SetCursor(uint8_t, uint8_t); 
+void LCD_SetCursor(uint8_t, uint8_t);
 
 #endif

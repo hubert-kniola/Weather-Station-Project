@@ -4,47 +4,47 @@
 #include <stdio.h>
 
 // Polecenia sterownika HITACHI HD44780 uzywane w module
-#define CLEAR_DISPLAY 0x01
-#define RETURN_HOME 0x02
-#define ENTRY_MODESET 0x04
-#define DISPLAY_CONTROL 0x08
-#define CURSOR_SHIFT 0x10
-#define FUNCTION_SET 0x20
-#define SET_CGRAM_ADDR 0x40
-#define SET_DDRAM_ADDR 0x80
+#define CLEAR_DISPLAY 		0x01
+#define RETURN_HOME 		0x02
+#define ENTRY_MODESET 		0x04
+#define DISPLAY_CONTROL 	0x08
+#define CURSOR_SHIFT 		0x10
+#define FUNCTION_SET 		0x20
+#define SET_CGRAM_ADDR 		0x40
+#define SET_DDRAM_ADDR 		0x80
 
-#define ENTRY_RIGHT 0x00
-#define ENTRY_LEFT 0x02
-#define ENTRY_SHIFT_INCREMENT 0x01
-#define ENTRY_SHIFT_DECREMENT 0x00
+#define ENTRY_RIGHT 			0x00
+#define ENTRY_LEFT 				0x02
+#define ENTRY_SHIFT_INCREMENT 	0x01
+#define ENTRY_SHIFT_DECREMENT 	0x00
 
-#define DISPLAY_ON 0x04
-#define DISPLAY_OFF 0x00
-#define CURSOR_ON 0x02
-#define CURSOR_OFF 0x00
-#define BLINK_ON 0x01
-#define BLINK_OFF 0x00
+#define DISPLAY_ON 		0x04
+#define DISPLAY_OFF 	0x00
+#define CURSOR_ON 		0x02
+#define CURSOR_OFF 		0x00
+#define BLINK_ON 		0x01
+#define BLINK_OFF 		0x00
 
-#define DISPLAY_MOVE 0x08
-#define MOVE_RIGHT 0x04
-#define MOVE_LEFT 0x00
+#define DISPLAY_MOVE 	0x08
+#define MOVE_RIGHT 		0x04
+#define MOVE_LEFT 		0x00
 
-#define FOUR_BIT_MODE 0x00
-#define TWO_LINE 0x08
-#define TWENTY_DOTS 0x00
+#define FOUR_BIT_MODE 	0x00
+#define TWO_LINE 		0x08
+#define TWENTY_DOTS 	0x00
 
-#define COLUMNS 20
-#define ROWS 4
+#define COLUMNS 	20
+#define ROWS 		4
 
-#define DEG_CHAR 7
-#define TIN_CHAR 6
-#define TOUT_CHAR 5
-#define HIN_CHAR 4
-#define HOUT_CHAR 3
+#define DEG_CHAR 	7
+#define TIN_CHAR 	6
+#define TOUT_CHAR 	5
+#define HIN_CHAR 	4
+#define HOUT_CHAR 	3
 
 /* ----------------- Konfiguracja uzytkownika ------------------- */
 /* Port glowny i piny */
-#define PORT GPIOE
+#define PORT 	GPIOE
 #define RS_PIN GPIO_PIN_4
 #define RW_PIN GPIO_PIN_5
 #define EN_PIN GPIO_PIN_6
@@ -54,8 +54,8 @@
 #define D7_PIN GPIO_PIN_3
 
 /* Port i pin podswietlenia */
-#define BG_PORT GPIOC
-#define BG_PIN GPIO_PIN_15
+#define BG_PORT 	GPIOC
+#define BG_PIN 		GPIO_PIN_15
 /* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 uint16_t _data[4];
@@ -195,7 +195,7 @@ void LCD_Init(void) {
 }
 
 void LCD_ToggleBackgroundLED(void) {
-	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_15);
+	HAL_GPIO_TogglePin(BG_PORT, BG_PIN);
 }
 
 void LCD_ClearScreen(void) {

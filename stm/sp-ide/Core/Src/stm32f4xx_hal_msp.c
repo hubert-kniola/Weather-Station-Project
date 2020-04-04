@@ -340,7 +340,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
     PC10     ------> USART3_TX
     PC11     ------> USART3_RX 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_11;
+    GPIO_InitStruct.Pin = HTTP_TX_Pin|HTTP_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -377,7 +377,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
     PC10     ------> USART3_TX
     PC11     ------> USART3_RX 
     */
-    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_10|GPIO_PIN_11);
+    HAL_GPIO_DeInit(GPIOC, HTTP_TX_Pin|HTTP_RX_Pin);
 
     /* USART3 interrupt DeInit */
     HAL_NVIC_DisableIRQ(USART3_IRQn);

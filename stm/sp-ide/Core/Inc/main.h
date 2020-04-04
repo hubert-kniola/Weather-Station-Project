@@ -85,6 +85,14 @@ void Error_Handler(void);
 #define RGB_Blue_GPIO_Port GPIOA
 #define RGB_Red_Pin GPIO_PIN_5
 #define RGB_Red_GPIO_Port GPIOA
+#define MENU_Btn1_Pin GPIO_PIN_7
+#define MENU_Btn1_GPIO_Port GPIOE
+#define MENU_Btn2_Pin GPIO_PIN_8
+#define MENU_Btn2_GPIO_Port GPIOE
+#define MENU_Btn3_Pin GPIO_PIN_9
+#define MENU_Btn3_GPIO_Port GPIOE
+#define MENU_Btn4_Pin GPIO_PIN_10
+#define MENU_Btn4_GPIO_Port GPIOE
 #define STM_Green_Pin GPIO_PIN_12
 #define STM_Green_GPIO_Port GPIOD
 #define STM_Orange_Pin GPIO_PIN_13
@@ -93,6 +101,10 @@ void Error_Handler(void);
 #define STM_Red_GPIO_Port GPIOD
 #define STM_Blue_Pin GPIO_PIN_15
 #define STM_Blue_GPIO_Port GPIOD
+#define HTTP_TX_Pin GPIO_PIN_10
+#define HTTP_TX_GPIO_Port GPIOC
+#define HTTP_RX_Pin GPIO_PIN_11
+#define HTTP_RX_GPIO_Port GPIOC
 #define SD_SCK_Pin GPIO_PIN_3
 #define SD_SCK_GPIO_Port GPIOB
 #define SD_MISO_Pin GPIO_PIN_4

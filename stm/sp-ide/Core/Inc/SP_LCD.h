@@ -19,6 +19,7 @@ void LCD_PrintfDelayed(uint16_t, const char[], ...);
 void LCD_PrintCentered(const char[]);
 void LCD_PrintDegree(void);
 void LCD_PrintTempInfo(float*, float*);
+void LCD_PrintDateTime(const char[], const char[]);
 
 void LCD_DisableBlink(void);
 void LCD_EnableBlink(void);
@@ -32,12 +33,5 @@ void LCD_EnableAutoscroll(void);
 void LCD_DisableAutoscroll(void);
 void LCD_DefineCustomChar(uint8_t, uint8_t[]);
 void LCD_SetCursor(uint8_t, uint8_t); 
-
-void _LCD_SetRowOffsets(int, int, int, int);
-void _LCD_SendData(uint8_t, bool);
-void _LCD_SendCommand(uint8_t);
-void _LCD_SendByteWithState(uint8_t, GPIO_PinState);
-void _LCD_WriteData(uint8_t);
-void _LCD_EnableSignal(void);
 
 #endif

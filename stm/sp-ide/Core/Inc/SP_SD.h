@@ -4,8 +4,8 @@
 #include "main.h"
 
 void SD_Init(void);
-uint8_t SD_WriteJSON(float[]);
 void SD_RefreshDateTime(void);
 void SD_GetDateTime(char[], char[]);
+uint8_t SD_WriteJSON(float[]);
 
 #endif

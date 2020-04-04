@@ -2,29 +2,27 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define THS_START_LOW 18000
-#define THS_START_HI 20
-#define THS_RESPONSE 40
-#define THS_SIGNAL_WAIT 60
-#define THS_ERROR_RANGE 10
-#define THS_SECOND 1000
+#define START_LOW 18000
+#define START_HI 20
+#define RESPONSE 40
+#define SIGNAL_WAIT 60
+#define ERROR_RANGE 10
+#define SECOND 1000
 
+/* ----------------- Konfiguracja uzytkownika ------------------- */
+/* Port i piny czujnika */
 #define THS_PORT GPIOC
+#define PIN1 GPIO_PIN_0 /* Wewnetrzny */
+#define PIN2 GPIO_PIN_1 /* Zewnetrzny */
+
+extern TIM_HandleTypeDef htim4; /* Wymagany jest period > 18_000 i czestotliwosc 1 MHz */
+/* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 bool _ready;
-
 uint8_t _data[5];
-uint16_t _pin1;
-uint16_t _pin2;
-
 uint32_t _clockCounter;
 
-extern TIM_HandleTypeDef htim4;
-
 void THS_Init() {
-	_pin1 = GPIO_PIN_0;
-	_pin2 = GPIO_PIN_1;
-
 	_clockCounter = 0;
 
 	HAL_Delay(500);
@@ -70,14 +68,14 @@ uint8_t _THS_InitConn(uint16_t pin) {
 	Write(0);
 	HAL_Delay(18);
 	Write(1);
-	THS_Delay(THS_START_HI);
+	THS_Delay(START_HI);
 
 	/* Synchro */
 	_THS_SetPinInput(pin);
-	THS_Delay(THS_RESPONSE);
+	THS_Delay(RESPONSE);
 
 	if (!Read()) {
-		THS_Delay(2 * THS_RESPONSE);
+		THS_Delay(2 * RESPONSE);
 		if (!Read()) {
 			/* Brak synchro */
 			return 0;
@@ -98,7 +96,7 @@ uint8_t _THS_ReadByte(uint16_t pin) {
 			if (_clockCounter > 200)
 				return 255;
 		}
-		THS_Delay(THS_SIGNAL_WAIT);
+		THS_Delay(SIGNAL_WAIT);
 
 		byte <<= 1;
 		if (Read()) {
@@ -112,14 +110,14 @@ uint8_t _THS_ReadByte(uint16_t pin) {
 }
 
 uint8_t _THS_CCR_Acceptable(uint8_t ccrIn, uint8_t ccrAcc) {
-	if (ccrAcc - THS_ERROR_RANGE <= ccrIn && ccrIn <= ccrAcc + THS_ERROR_RANGE)
+	if (ccrAcc - ERROR_RANGE <= ccrIn && ccrIn <= ccrAcc + ERROR_RANGE)
 		return 1;
 	return 0;
 }
 
 /* Funkcja wymaga jako argumentu tablicy conajmniej 2 elementowej else panic */
 uint8_t THS_ReadData(THS_Sensor sensor, float data[]) {
-	uint16_t pin = (sensor == THS_In) ? _pin1 : _pin2;
+	uint16_t pin = (sensor == THS_In) ? PIN1 : PIN2;
 
 	if (!_THS_InitConn(pin))
 		return 0;
@@ -153,21 +151,11 @@ uint8_t THS_ReadData(THS_Sensor sensor, float data[]) {
 	return 0;
 }
 
-/* Umiescic w obsludze przerwania zegara  tak by if dzialal co sekunde*/
+/* Umiescic w obsludze przerwania zegara tak by if dzialal co sekunde*/
 void THS_ErrorClock(void) {
-	if (_clockCounter > THS_SECOND) {
+	if (_clockCounter > SECOND) {
 		_ready = true;
 		_clockCounter = 0;
 	}
 	++_clockCounter;
-}
-
-/* Gdy juz niepotrzebny uzyc free */
-float* THS_NewContainer(void) {
-	float *cont = (float*) malloc(2 * sizeof(float));
-
-	cont[0] = 0.f;
-	cont[1] = 0.f;
-
-	return cont;
 }

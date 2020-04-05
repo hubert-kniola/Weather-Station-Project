@@ -1,6 +1,7 @@
-SP_MENU.c:25:6:MENU_Init	4	static
-SP_MENU.c:29:6:_MENU_UpPressed	4	static
-SP_MENU.c:33:6:_MENU_DownPressed	4	static
-SP_MENU.c:37:6:_MENU_LeftPressed	4	static
-SP_MENU.c:41:6:_MENU_RightPressed	4	static
-SP_MENU.c:45:6:MENU_HandleKeys	8	static
+SP_MENU.c:32:6:MENU_Init	4	static
+SP_MENU.c:36:6:_PWD_ResetPasswd	16	static
+SP_MENU.c:45:6:_PWD_NextChar	4	static
+SP_MENU.c:50:6:_PWD_SaveAndWrite	16	static
+SP_MENU.c:55:6:_PWD_ParsePasswd	16	static
+SP_MENU.c:63:6:MENU_PasswdInput	8	static
+SP_MENU.c:79:9:MENU_HandleKeys	8	static

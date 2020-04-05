@@ -3,7 +3,15 @@
 
 #include "main.h"
 
+typedef enum {
+	ST_Clock,
+	ST_Options,
+	ST_WiFi,
+	ST_PassInput
+} StateEnum;
+
 void MENU_Init(void);
-void MENU_HandleKeys(void);
+void MENU_PasswdInput(void);
+uint8_t MENU_HandleKeys(void);
 
 #endif

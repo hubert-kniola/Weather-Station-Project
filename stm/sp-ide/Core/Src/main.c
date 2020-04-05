@@ -66,8 +66,7 @@ UART_HandleTypeDef huart3;
 RTC_TimeTypeDef hTime;
 RTC_DateTypeDef hDate;
 
-uint8_t State = 0; /* 0-Clock state; 1-MenuState */
-
+StateEnum State;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -85,6 +84,8 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+#define ResetTIM(arg) __HAL_TIM_SET_COUNTER(&htim ## arg, 0);
 
 uint8_t _led = 0;
 
@@ -155,13 +156,6 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 
 	/* Module Init */
-	RGB_Init();
-	LCD_Init();
-	THS_Init();
-	SD_Init();
-	HTTP_Init();
-	MENU_Init();
-
 	HAL_TIM_Base_Start_IT(&htim2); /* RGB Tim Init */
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
@@ -169,19 +163,30 @@ int main(void) {
 
 	HAL_TIM_Base_Start_IT(&htim3); /* System Update Tim Init */
 	HAL_TIM_Base_Start(&htim4); /* THS syncro clock */
+
+	RGB_Init();
+	LCD_Init();
+	THS_Init();
+	SD_Init();
+	HTTP_Init();
+	MENU_Init();
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 
 	LCD_ClearScreen();
-	unsigned long check = 0;
+	unsigned long check = 1000001;
 
 	while (1) {
 
-		MENU_HandleKeys();
+		if (MENU_HandleKeys()) { /* Uzytkownik zareagowal */
+			LCD_BackgroundOn();
+			ResetTIM(3);
 
-		if (check++ > 1000000) {
+		}
+
+		if (check++ > 1000000 && State == ST_Clock) {
 			ClockStateLoop();
 			check = 0;
 		}
@@ -603,6 +608,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM2) {
 		RGB_SetMode(_led);
 		THS_ErrorClock();
+	} else if (htim->Instance == TIM3 && State == ST_Clock) {
+		LCD_BackgroundOff();
 	}
 }
 
@@ -610,17 +617,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GPIO_PIN_0) {
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
 		{
-			LCD_ToggleBackgroundLED();
-
+			MENU_PasswdInput();
 			if (++_led > 9)
 				_led = 0;
 		}
-	}
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (huart->Instance == USART3) {
-
 	}
 }
 /* USER CODE END 4 */

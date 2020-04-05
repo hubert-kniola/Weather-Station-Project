@@ -137,7 +137,7 @@ void LCD_Init(void) {
 	_displayFunction = FOUR_BIT_MODE | TWO_LINE | TWENTY_DOTS;
 
 	/* Start z wlaczonym podswietleniem */
-	HAL_GPIO_WritePin(BG_PORT, BG_PIN, GPIO_PIN_SET);
+	LCD_BackgroundOn();
 	_LCD_SetRowOffsets(0x00, 0x40, 0x00 + COLUMNS, 0x40 + COLUMNS);
 
 	/* Opoznienia sa w celu ustablizowania napiec na diodach ekranu */
@@ -194,8 +194,12 @@ void LCD_Init(void) {
 	LCD_DefineCustomChar(HOUT_CHAR, char3); /* Humid OUT */
 }
 
-void LCD_ToggleBackgroundLED(void) {
-	HAL_GPIO_TogglePin(BG_PORT, BG_PIN);
+void LCD_BackgroundOn(void) {
+	HAL_GPIO_WritePin(BG_PORT, BG_PIN, GPIO_PIN_SET);
+}
+
+void LCD_BackgroundOff(void) {
+	HAL_GPIO_WritePin(BG_PORT, BG_PIN, GPIO_PIN_RESET);
 }
 
 void LCD_ClearScreen(void) {
@@ -213,6 +217,9 @@ void LCD_ResetCursor(void) {
 void LCD_SetCursor(uint8_t col, uint8_t row) {
 	if (row >= ROWS) {
 		row = ROWS - 1;
+	}
+	if (col >= COLUMNS) {
+		col = COLUMNS - 1;
 	}
 
 	_LCD_SendCommand(SET_DDRAM_ADDR | (col + _rowOffsets[row]));
@@ -393,6 +400,49 @@ void LCD_NextLine(const char text[]) {
 	LCD_SetCursor(_currentCol, _currentRow);
 }
 
+uint8_t LCD_CursorUp(void) {
+	if (_currentRow > 0)
+		--_currentRow;
+
+	LCD_SetCursor(_currentCol, _currentRow);
+	return _currentRow;
+}
+uint8_t LCD_CursorDown(void) {
+	if (_currentRow < ROWS)
+		++_currentRow;
+
+	LCD_SetCursor(_currentCol, _currentRow);
+	return _currentRow;
+}
+uint8_t LCD_CursorLeft(void) {
+	if (_currentCol > 0) {
+		--_currentCol;
+	} else {
+		_currentCol = COLUMNS - 1;
+		if (_currentRow == 0) {
+			_currentRow = ROWS - 1;
+		} else {
+			--_currentRow;
+		}
+	}
+	LCD_SetCursor(_currentCol, _currentRow);
+	return _currentCol;
+}
+uint8_t LCD_CursorRight(void) {
+	if (_currentCol < COLUMNS - 1) {
+		++_currentCol;
+	} else {
+		_currentCol = 0;
+		if (_currentRow == ROWS - 1) {
+			_currentRow = 0;
+		} else {
+			++_currentRow;
+		}
+	}
+	LCD_SetCursor(_currentCol, _currentRow);
+	return _currentCol;
+}
+
 void LCD_DefineCustomChar(uint8_t location, uint8_t bytes[]) {
 	/* 8 miejsc do zapisu 0-7 */
 	location &= 0x7; /* zawsze bezpieczny adres */
@@ -408,4 +458,9 @@ void LCD_PrintDateTime(const char date[], const char time[]) {
 	LCD_SetCursor(12, 0);
 	LCD_Print(time);
 	LCD_NextLine("");
+}
+
+void LCD_WriteChar(char character) {
+	_LCD_SendData((uint8_t) character, true);
+	LCD_CursorLeft();
 }

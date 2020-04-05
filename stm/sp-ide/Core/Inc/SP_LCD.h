@@ -6,7 +6,8 @@
 
 void LCD_Init(void);
 
-void LCD_ToggleBackgroundLED(void);
+void LCD_BackgroundOn(void);
+void LCD_BackgroundOff(void);
 void LCD_ClearScreen(void);
 void LCD_ResetCursor(void);
 void LCD_DisplayOff(void);
@@ -33,5 +34,11 @@ void LCD_EnableAutoscroll(void);
 void LCD_DisableAutoscroll(void);
 void LCD_DefineCustomChar(uint8_t, uint8_t[]);
 void LCD_SetCursor(uint8_t, uint8_t);
+
+uint8_t LCD_CursorUp(void);
+uint8_t LCD_CursorDown(void);
+uint8_t LCD_CursorLeft(void);
+uint8_t LCD_CursorRight(void);
+void LCD_WriteChar(char);
 
 #endif

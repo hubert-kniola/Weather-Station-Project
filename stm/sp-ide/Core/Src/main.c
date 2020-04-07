@@ -118,6 +118,11 @@ void ClockStateLoop(void) {
 	LCD_NextLine("");
 }
 
+void TurnScreenOn(void) {
+	LCD_BackgroundOn();
+	ResetTIM(3);
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -181,8 +186,7 @@ int main(void) {
 	while (1) {
 
 		if (MENU_HandleKeys()) { /* Uzytkownik zareagowal */
-			LCD_BackgroundOn();
-			ResetTIM(3);
+			TurnScreenOn();
 
 		}
 
@@ -617,7 +621,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GPIO_PIN_0) {
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
 		{
-			MENU_PasswdInput();
 			if (++_led > 9)
 				_led = 0;
 		}

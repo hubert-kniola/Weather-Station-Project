@@ -78,7 +78,10 @@ void MENU_PasswdInput(void) {
 
 uint8_t MENU_HandleKeys(void) {
 	IfPressed (UP) {
-		if (State == ST_Options || State == ST_WiFi) {
+		if (State == ST_Clock) {
+			/* Przejdz w ekran opcji */
+			MENU_PasswdInput();
+		} else if (State == ST_Options || State == ST_WiFi) {
 			LCD_CursorUp();
 		} else if (State == ST_PassInput) {
 			/* Dopasuj olejny znak ASCII */

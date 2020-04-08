@@ -29,7 +29,25 @@ void SD_Init(void) {
 	SD_RefreshDateTime();
 }
 
+void _SD_ClearDateTimeRegisters(void) {
+	_Time.DayLightSaving = 0;
+	_Time.Hours = 0;
+	_Time.Minutes = 0;
+	_Time.SecondFraction = 0;
+	_Time.Seconds = 0;
+	_Time.StoreOperation = 0;
+	_Time.SubSeconds = 0;
+	_Time.TimeFormat = 0;
+
+	_Date.Date = 0;
+	_Date.Month = 0;
+	_Date.WeekDay = 0;
+	_Date.Year = 0;
+}
+
 void SD_RefreshDateTime(void) {
+	_SD_ClearDateTimeRegisters();
+
 	HAL_RTC_GetTime(&hrtc, &_Time, RTC_FORMAT_BCD);
 	HAL_RTC_GetDate(&hrtc, &_Date, RTC_FORMAT_BCD);
 
@@ -56,13 +74,15 @@ void SD_GetDateTime(char date[], char time[]) {
 }
 
 void SD_SetDateTime(uint8_t date[], uint8_t time[]) {
+	_SD_ClearDateTimeRegisters();
+
 	_Date.Date = date[0] * 16 + date[1];
 	_Date.Month = date[2] * 16 + date[3];
 	_Date.Year = date[4] * 16 + date[5];
 
 	_Time.Hours = time[0] * 16 + time[1];
 	_Time.Minutes = time[2] * 16 + time[3];
-	_Time.SecondFraction = time[4] * 16 + time[5];
+	_Time.Seconds = time[4] * 16 + time[5];
 
 	HAL_RTC_SetTime(&hrtc, &_Time, RTC_FORMAT_BCD);
 	HAL_RTC_SetDate(&hrtc, &_Date, RTC_FORMAT_BCD);

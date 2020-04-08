@@ -1,5 +1,6 @@
 SP_SD.c:26:6:SD_Init	8	static
-SP_SD.c:32:6:SD_RefreshDateTime	8	static
-SP_SD.c:51:6:SD_GetDateTime	40	static
-SP_SD.c:58:6:SD_SetDateTime	16	static
-SP_SD.c:82:9:SD_WriteJSON	16	static
+SP_SD.c:32:6:_SD_ClearDateTimeRegisters	4	static
+SP_SD.c:48:6:SD_RefreshDateTime	8	static
+SP_SD.c:69:6:SD_GetDateTime	40	static
+SP_SD.c:76:6:SD_SetDateTime	16	static
+SP_SD.c:102:9:SD_WriteJSON	16	static

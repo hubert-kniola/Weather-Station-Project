@@ -116,9 +116,12 @@ void Error_Handler(void);
 #define LCD_D5_Pin GPIO_PIN_1
 #define LCD_D5_GPIO_Port GPIOE
 /* USER CODE BEGIN Private defines */
+
 /* Debug helpers */
 #define LED(color, state) HAL_GPIO_WritePin(GPIOD, STM_ ## color ## _Pin, GPIO_PIN_ ## state)
 #define LED_T(color) HAL_GPIO_TogglePin(GPIOD, STM_ ## color ## _Pin)
+/* Timer macro */
+#define ResetTIM(arg) __HAL_TIM_SET_COUNTER(&htim ## arg, 0);
 
 /* USER CODE END Private defines */
 

@@ -1,0 +1,5 @@
+SP_NET.c:54:6:_NET_ResetBuffer	16	static
+SP_NET.c:60:9:_NET_SendCommand	32	static
+SP_NET.c:79:6:NET_Init	8	static
+SP_NET.c:83:7:NET_RequestNetworkList	8	static
+SP_NET.c:90:7:NET_ShowMAC	8	static

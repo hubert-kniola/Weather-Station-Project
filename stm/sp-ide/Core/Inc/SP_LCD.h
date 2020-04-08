@@ -12,6 +12,7 @@ void LCD_ClearScreen(void);
 void LCD_ResetCursor(void);
 void LCD_DisplayOff(void);
 void LCD_DisplayOn(void);
+void LCD_WakeScreen(void);
 
 void LCD_NextLine(const char[]);
 void LCD_Print(const char[]);
@@ -21,6 +22,7 @@ void LCD_PrintCentered(const char[]);
 void LCD_PrintDegree(void);
 void LCD_PrintTempInfo(float*, float*);
 void LCD_PrintDateTime(const char[], const char[]);
+void LCD_WriteChar(char);
 
 void LCD_DisableBlink(void);
 void LCD_EnableBlink(void);
@@ -39,6 +41,6 @@ uint8_t LCD_CursorUp(void);
 uint8_t LCD_CursorDown(void);
 uint8_t LCD_CursorLeft(void);
 uint8_t LCD_CursorRight(void);
-void LCD_WriteChar(char);
+
 
 #endif

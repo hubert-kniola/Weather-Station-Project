@@ -55,7 +55,9 @@
 
 /* Port i pin podswietlenia */
 #define BG_PORT 	GPIOC
-#define BG_PIN 		GPIO_PIN_15
+#define BG_PIN 	GPIO_PIN_15
+
+extern TIM_HandleTypeDef htim3; /* uzyj numeru timera w LCD_WakeScreen */
 /* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 uint16_t _data[4];
@@ -192,6 +194,11 @@ void LCD_Init(void) {
 	uint8_t char3[8] = { 0b10100, 0b11100, 0b10101, 0b00000, 0b01000, 0b11101,
 			0b01000, 0b01000 };
 	LCD_DefineCustomChar(HOUT_CHAR, char3); /* Humid OUT */
+}
+
+void LCD_WakeScreen(void) {
+	LCD_BackgroundOn();
+	ResetTIM(3);
 }
 
 void LCD_BackgroundOn(void) {

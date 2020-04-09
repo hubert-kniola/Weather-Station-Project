@@ -2,7 +2,6 @@
 #define SP_LCD_h
 
 #include "main.h"
-#include <stdbool.h>
 
 void LCD_Init(void);
 
@@ -24,6 +23,8 @@ void LCD_PrintTempInfo(float*, float*);
 void LCD_PrintDateTime(const char[], const char[]);
 void LCD_WriteChar(char);
 void LCD_PrintNetworks(char*, int);
+void LCD_PrintOptionsScreen(const char[], int);
+void LCD_PrintNetworkStatus(ModeEnum, char*);
 
 void LCD_DisableBlink(void);
 void LCD_EnableBlink(void);

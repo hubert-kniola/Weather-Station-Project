@@ -25,7 +25,6 @@ uint32_t _clockCounter;
 void THS_Init() {
 	_clockCounter = 0;
 
-	HAL_Delay(500);
 	_ready = true;
 }
 

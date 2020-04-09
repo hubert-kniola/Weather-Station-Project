@@ -123,6 +123,21 @@ void Error_Handler(void);
 /* Timer macro */
 #define ResetTIM(arg) __HAL_TIM_SET_COUNTER(&htim ## arg, 0);
 
+typedef enum {
+	ST_Clock,
+	ST_Options,
+	ST_WiFi,
+	ST_PassInput,
+	ST_SetDateTime
+} StateEnum;
+
+typedef enum {
+	MD_ClientConn,
+	MD_ClientDConn,
+	MD_AccessPoint,
+	MD_LostHost
+} ModeEnum;
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

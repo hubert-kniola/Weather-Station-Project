@@ -62,6 +62,7 @@ UART_HandleTypeDef huart3;
 /* USER CODE BEGIN PV */
 
 StateEnum State;
+ModeEnum Mode;
 
 /* USER CODE END PV */
 

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 // Polecenia sterownika HITACHI HD44780 uzywane w module
 #define CLEAR_DISPLAY 		0x01
@@ -479,7 +480,8 @@ void LCD_PrintNetworks(char *data, int from) {
 
 	/* ustaw indeks na pozadanej pozycji */
 	for (int i = 0; i < from - 1; i++) {
-		while (data[index++] != ';');
+		while (data[index++] != ';')
+			;
 	}
 
 	LCD_ClearScreen();
@@ -506,5 +508,52 @@ void LCD_PrintNetworks(char *data, int from) {
 				LCD_NextLine("");
 			index++;
 		}
+	}
+}
+
+void LCD_PrintOptionsScreen(const char string[], int from) {
+	int index = 0;
+	for (int i = 0; i < from - 1; i++) {
+		while (string[index++] != ';')
+			;
+	}
+
+	LCD_ClearScreen();
+	LCD_PrintCentered("Options:");
+
+	for (int i = 1; i <= 3; i++) {
+		LCD_SetCursor(0, i);
+
+		while (string[index] != ';') {
+			LCD_WriteChar(string[index++]);
+			LCD_CursorRight();
+		}
+		index++;
+	}
+}
+
+void LCD_PrintNetworkStatus(ModeEnum mode, char *data) {
+	/* wyczysc linie */
+	LCD_SetCursor(0, 3);
+	LCD_Print("                    ");
+	LCD_SetCursor(0, 3);
+
+	if (mode == MD_ClientDConn) {
+		LCD_PrintCentered("No WiFi Connection");
+	} else if (mode == MD_ClientConn) {
+		if (data == NULL) return;
+
+		int size = strlen(data);
+		_currentCol = (int) ((COLUMNS - size) / 2);
+
+		LCD_SetCursor(_currentCol, _currentRow);
+		for (int i = 0; i < size; i++) {
+			LCD_WriteChar(data[i]);
+			LCD_CursorRight();
+		}
+	} else if (mode == MD_AccessPoint) {
+
+	} else if (mode == MD_LostHost) {
+		LCD_PrintCentered("Network unavailable!");
 	}
 }

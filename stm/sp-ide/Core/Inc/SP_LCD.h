@@ -23,6 +23,7 @@ void LCD_PrintDegree(void);
 void LCD_PrintTempInfo(float*, float*);
 void LCD_PrintDateTime(const char[], const char[]);
 void LCD_WriteChar(char);
+void LCD_PrintNetworks(char*, int);
 
 void LCD_DisableBlink(void);
 void LCD_EnableBlink(void);

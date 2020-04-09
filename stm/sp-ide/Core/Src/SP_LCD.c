@@ -471,3 +471,40 @@ void LCD_WriteChar(char character) {
 	_LCD_SendData((uint8_t) character, true);
 	LCD_CursorLeft();
 }
+
+void LCD_PrintNetworks(char *data, int from) {
+	int index = 0;
+	int column = 0;
+	char number = from + '0';
+
+	/* ustaw indeks na pozadanej pozycji */
+	for (int i = 0; i < from - 1; i++) {
+		while (data[index++] != ';');
+	}
+
+	LCD_ClearScreen();
+	LCD_SetCursor(0, 0);
+
+	/* wypisujemy maks 4 */
+	for (int i = 1; i <= 4; i++) {
+		LCD_WriteChar(number++);
+		column = LCD_CursorRight();
+		LCD_Print(":");
+
+		while (data[index] != ';') {
+			if (column > 0) { /* kursor skoczyl do nowej linii */
+				LCD_WriteChar(data[index]);
+				column = LCD_CursorRight();
+			}
+			index++;
+		}
+
+		if (data[index + 1] == 0) {
+			break;
+		} else {
+			if (column != 0)
+				LCD_NextLine("");
+			index++;
+		}
+	}
+}

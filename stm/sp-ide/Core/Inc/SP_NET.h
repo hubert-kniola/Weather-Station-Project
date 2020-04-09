@@ -6,6 +6,7 @@
 void NET_Init(void);
 
 char* NET_RequestNetworkList(void);
-char* NET_ShowMAC(void);
+
+uint8_t NET_ConnectToWiFi(char*, int);
 
 #endif

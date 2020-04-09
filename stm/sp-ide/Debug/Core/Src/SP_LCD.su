@@ -36,3 +36,4 @@ SP_LCD.c:438:9:LCD_CursorRight	8	static
 SP_LCD.c:453:6:LCD_DefineCustomChar	24	static
 SP_LCD.c:462:6:LCD_PrintDateTime	16	static
 SP_LCD.c:470:6:LCD_WriteChar	16	static
+SP_LCD.c:475:6:LCD_PrintNetworks	40	static

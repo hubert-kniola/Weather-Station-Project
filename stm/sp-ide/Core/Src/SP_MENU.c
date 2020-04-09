@@ -8,8 +8,9 @@
 #include <stdbool.h>
 
 #define BTN_PRESSED_TIME	5
-#define MAX_PASSWD_LEN 	40
+#define MAX_PASSWD_LEN 		40
 #define DT_LEN				19
+
 #define MIN_PWD_CHAR 	' '
 #define MAX_PWD_CHAR 	'~'
 #define BEGIN_PWD_CHAR	'@'
@@ -20,7 +21,7 @@
 /* ----------------- Konfiguracja uzytkownika ------------------- */
 #define PORT 	GPIOE
 
-#define UP 	GPIO_PIN_7
+#define UP 		GPIO_PIN_7
 #define DOWN	GPIO_PIN_8
 #define LEFT 	GPIO_PIN_9
 #define RIGHT 	GPIO_PIN_10
@@ -49,6 +50,9 @@ uint8_t _PWD_index;
 uint8_t _optionsRow;
 uint8_t _optionsCol;
 
+uint8_t _networksIn;
+uint8_t _currentNetwork;
+char* _networksList;
 
 void MENU_Init(void) {
 	State = ST_Clock;
@@ -71,14 +75,6 @@ char _PWD_NextChar(void) {
 void _PWD_SaveAndWrite(char c) {
 	WiFiPassword[_PWD_index] = (c == ' ') ? 0 : c;
 	LCD_WriteChar(c);
-}
-
-void _PWD_ParsePasswd(void) {
-	bool clearRest = false;
-	for (int i = 0; i < MAX_PASSWD_LEN; i++) {
-			if (!clearRest && WiFiPassword[i] == 0) clearRest = true;
-			if (clearRest) WiFiPassword[i] = 0;
-	}
 }
 
 void _CLK_HandleDateTimeInput(void) {
@@ -265,7 +261,6 @@ void _CLK_ParseAndSetDateTime(void) {
 		/* handluj z tym */
 		LCD_ClearScreen();
 
-
 		LCD_SetCursor(0, 1);
 		LCD_PrintCentered("Invalid data");
 		LCD_SetCursor(0, 2);
@@ -290,6 +285,7 @@ void MENU_PasswdInput(void) {
 
 		_PWD_ResetPasswd();
 
+		LCD_DisableBlink();
 		LCD_EnableCursor();
 	}
 }
@@ -341,15 +337,83 @@ void MENU_OptionsSetDateTime(void) {
 	}
 }
 
+uint8_t _WiFi_NofNetworks(char* data) {
+	int amount = 0;
+	for (int i = 0;; i++) {
+		if (data[i] == 0) {
+			return amount;
+		}
+
+		if (data[i] == ';'){
+			amount++;
+		}
+	}
+	return amount;
+}
+
+void _WiFi_RequestConn(void) {
+	int clearRest = 0;
+	for (int i = 0; i < MAX_PASSWD_LEN; i++) {
+			if (!clearRest && WiFiPassword[i] == 0) clearRest = i;
+			if (clearRest) WiFiPassword[i] = 0;
+	}
+
+	LCD_ClearScreen();
+	LCD_DisableCursor();
+
+	LCD_SetCursor(0, 2);
+	LCD_PrintCentered("Connecting.");
+
+	uint8_t result = NET_ConnectToWiFi((char*)WiFiPassword, _currentNetwork);
+	LCD_ClearScreen();
+
+	if (result == 0) {
+		LCD_SetCursor(0,1);
+		LCD_PrintCentered("Connected!");
+
+		HAL_Delay(1000);
+	} else {
+		LCD_SetCursor(0,1);
+		LCD_PrintCentered("Couldn't connect");
+		LCD_SetCursor(0,2);
+		LCD_PrintCentered("to chosen network.");
+	}
+	HAL_Delay(1000);
+}
+
 void MENU_OptionsWifiList(void) {
 	if (State != ST_WiFi) {
 		State = ST_WiFi;
 		LCD_ClearScreen();
 
 		LCD_Print("--Select a network--");
-		LCD_SetCursor(0, 1);
+		LCD_SetCursor(0, 2);
+		LCD_PrintCentered("searching:");
+		LCD_SetCursor(0, 3);
+		LCD_PrintCentered("wait for 10s");
 
+		_optionsRow = 0;
 
+		char* data = NET_RequestNetworkList();
+		if (data != NULL) {
+			/* liczba rzedow do poruszania sie */
+			_networksIn = _WiFi_NofNetworks(data);
+			_currentNetwork = 1;
+			_networksList = data;
+
+			LCD_PrintNetworks(data, _currentNetwork);
+
+			/* przygotuj sie na wybor */
+			LCD_SetCursor(0, 0);
+		} else {
+			LCD_DisableBlink();
+			LCD_ClearScreen();
+			LCD_SetCursor(0, 1);
+
+			LCD_PrintCentered("No networks found!");
+			HAL_Delay(1000);
+			MENU_Options();
+		}
 	}
 }
 
@@ -375,11 +439,6 @@ void MENU_Clock(void) {
 	}
 
 	LCD_SetCursor(0, 3);
-
-	char* result = NET_ShowMAC();
-	if (result != NULL) {
-		//LCD_Print(result);
-	}
 }
 
 uint8_t MENU_HandleKeys(void) {
@@ -387,7 +446,7 @@ uint8_t MENU_HandleKeys(void) {
 		if (State == ST_Clock) {
 			/* Przejdz w ekran opcji */
 			MENU_Options();
-		} else if (State == ST_Options || State == ST_WiFi) {
+		} else if (State == ST_Options) {
 			if (_optionsRow > 1) {
 				_optionsRow = LCD_CursorUp();
 			}
@@ -397,23 +456,39 @@ uint8_t MENU_HandleKeys(void) {
 		} else if (State == ST_SetDateTime) {
 			/* wstepne ograniczenie inputu */
 			_CLK_HandleDateTimeInput();
+		} else if (State == ST_WiFi) {
+			if (_optionsRow > 0) {
+				_optionsRow = LCD_CursorUp();
+				_currentNetwork--;
+			} else if (_networksIn > 4 && _currentNetwork != 1) {
+				LCD_PrintNetworks(_networksList, --_currentNetwork);
+				LCD_SetCursor(0, 0);
+			}
 		}
 
 		LED_T(Red);
 		return 1;
 
 	} Or (DOWN) {
-		if (State == ST_Options || State == ST_WiFi) {
+		if (State == ST_Options) {
 			if (_optionsRow < 4) {
 				_optionsRow = LCD_CursorDown();
 			}
 		} else if (State == ST_PassInput) {
 			/* Powrot do trybu zegara */
-			_PWD_ParsePasswd();
+			_WiFi_RequestConn();
 			MENU_Clock();
 		} else if (State == ST_SetDateTime) {
 			_CLK_ParseAndSetDateTime();
 			MENU_Clock();
+		} else if (State == ST_WiFi) {
+			if (_optionsRow < 4 && _optionsRow < _networksIn - 1) {
+				_optionsRow = LCD_CursorDown();
+				_currentNetwork++;
+			} else if (_networksIn > 4 && _currentNetwork != 4) {
+				LCD_PrintNetworks(_networksList, ++_currentNetwork - 4);
+				LCD_SetCursor(0, 3);
+			}
 		}
 
 		LED_T(Green);
@@ -430,6 +505,8 @@ uint8_t MENU_HandleKeys(void) {
 			MENU_Clock();
 		} else if (State == ST_SetDateTime) {
 			_CLK_MoveInputLeft();
+		} else if (State == ST_WiFi) {
+			MENU_Options();
 		}
 
 		LED_T(Blue);
@@ -455,6 +532,8 @@ uint8_t MENU_HandleKeys(void) {
 			}
 		} else if (State == ST_SetDateTime) {
 			_CLK_MoveInputRight();
+		} else if (State == ST_WiFi) {
+			MENU_PasswdInput();
 		}
 
 		LED_T(Orange);

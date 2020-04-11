@@ -19,7 +19,7 @@ extern TIM_HandleTypeDef htim4; /* Wymagany jest period > 18_000 i czestotliwosc
 /* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 bool _ready;
-uint8_t _data[5];
+uint8_t _readyData[5];
 uint32_t _clockCounter;
 
 void THS_Init() {

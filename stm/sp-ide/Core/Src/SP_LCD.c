@@ -61,7 +61,7 @@
 extern TIM_HandleTypeDef htim3; /* uzyj numeru timera w LCD_WakeScreen */
 /* ----------------- /Konfiguracja uzytkownika ------------------ */
 
-uint16_t _data[4];
+uint16_t _readyData[4];
 
 uint8_t _rowOffsets[4];
 
@@ -91,7 +91,7 @@ void _LCD_EnableSignal(void) {
 void _LCD_WriteData(uint8_t value) {
 	for (int i = 0; i < 4; i++) {
 		/* Little Endian */
-		HAL_GPIO_WritePin(PORT, _data[i],
+		HAL_GPIO_WritePin(PORT, _readyData[i],
 				((value >> i) & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	}
 
@@ -132,10 +132,10 @@ void _LCD_SendData(uint8_t value, bool moveCursor) {
 
 void LCD_Init(void) {
 	/* Piny danych */
-	_data[0] = D4_PIN;
-	_data[1] = D5_PIN;
-	_data[2] = D6_PIN;
-	_data[3] = D7_PIN;
+	_readyData[0] = D4_PIN;
+	_readyData[1] = D5_PIN;
+	_readyData[2] = D6_PIN;
+	_readyData[3] = D7_PIN;
 
 	_displayFunction = FOUR_BIT_MODE | TWO_LINE | TWENTY_DOTS;
 
@@ -212,13 +212,10 @@ void LCD_BackgroundOff(void) {
 
 void LCD_ClearScreen(void) {
 	_LCD_SendCommand(CLEAR_DISPLAY);
-	HAL_Delay(2);
 	LCD_ResetCursor();
 }
 
 void LCD_ResetCursor(void) {
-	_LCD_SendCommand(RETURN_HOME);
-	HAL_Delay(2);
 	LCD_SetCursor(0, 0);
 }
 
@@ -485,7 +482,6 @@ void LCD_PrintNetworks(char *data, int from) {
 	}
 
 	LCD_ClearScreen();
-	LCD_SetCursor(0, 0);
 
 	/* wypisujemy maks 4 */
 	for (int i = 1; i <= 4; i++) {

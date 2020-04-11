@@ -122,6 +122,11 @@ void Error_Handler(void);
 #define LED_T(color) HAL_GPIO_TogglePin(GPIOD, STM_ ## color ## _Pin)
 /* Timer macro */
 #define ResetTIM(arg) __HAL_TIM_SET_COUNTER(&htim ## arg, 0);
+/* IT MACRO */
+#define SYS_DisableITLowerThan(arg) __set_BASEPRI(arg << 4)
+#define SYS_EnableAllIT() __set_BASEPRI(0)
+
+#define UART_PRI 1
 
 typedef enum {
 	ST_Clock,

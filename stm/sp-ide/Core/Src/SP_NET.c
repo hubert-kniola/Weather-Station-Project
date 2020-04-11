@@ -1,64 +1,50 @@
 #include <SP_NET.h>
 
+#include "SP_HTTP.h"
+
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 
 /* makra polecen mikrokontrolera ESP 8266 */
-#define AT_HELLO 					"AT"
-#define AT_SOFTWARE_VERSION			"AT+GMR"
-#define AT_SET_BAUD(a)				"AT+CIOBAUD="a
-#define AT_GET_BAUD					"AT+CIOBAUD?"
-#define AT_RESET					"AT+RST"
-#define AT_SET_MODE(a)				"AT+CWMODE="a
-#define AT_DHCP_CONF(a1, a2)		"AT+CWDHCP="a1","a2
-#define AT_GET_MODE					"AT+CWMODE?"
-#define AT_GET_CONN_STATUS			"AT+CIPSTATUS"
-#define AT_SET_RECEIVE_MODE(a)		"AT+CIPMODE="a
-#define AT_GET_RECEIVE_MODE			"AT+CIPMODE?"
-#define AT_CONN_0(a1,a2,a3,a4)		"AT+CIPSTART="a1","a2","a3","a4
-#define AT_CONN_1(a1,a2,a3)			"AT+CIPSTART="a1","a2","a3
-#define AT_SET_MUX(a)				"AT+CIPMUX="a
-#define AT_SEND_00(a)				"AT+CIPSEND="a
-#define AT_SEND_10(a1,a2)			"AT+CIPSEND="a1","a2
-#define AT_SEND_01					"AT+CIPSEND"
-#define AT_SET_SERVER(a1,a2)		"AT+CIPSERVER="a1","a2
-#define AT_SHOW_GLO_IP				"AT+CIFSR"
-#define AT_DISCONN_0(a)				"AT+CIPCLOSE="a
-#define AT_DISCONN_1				"AT+CIPCLOSE"
-#define AT_SET_TIMEOUT(a)			"AT+CIPSTO="a
-#define AT_GET_TIMEOUT				"AT+CIPSTO"
-#define AT_SET_SLEEP_INT(a)			"AT+GSLP="a
-#define AT_CLI_SHOW_MAC				"AT+CIPSTAMAC?"
-#define AT_CLI_SET_MAC(a)			"AT+CIPSTAMAC="a
-#define AT_AP_SHOW_MAC				"AT+CIPAPMAC?"
-#define AT_AP_SET_MAC(a)			"AT+CIPAPAMAC="a
-#define AT_CLI_SHOW_IP				"AT+CIPSTA?"
-#define AT_CLI_SET_IP(a)			"AT+CIPSTA="a
-#define AT_AP_SHOW_IP				"AT+CIPAP?"
-#define AT_AP_SET_IP(a)				"AT+CIPAP="a
-/* tylko dla klienta */
-#define AT_CLI_SHOW_NETWORKS		"AT+CWLAP"
-#define AT_CLI_CONN_TO(a1,a2)		"AT+CWJAP="a1","a2
-#define R_AT_CLI_CONN_TO			"AT+CWJAP=\"" /* 2 arg */
-#define AT_CLI_CONN_STATE			"AT+CWJAP?"
-#define AT_CLI_DISCONN				"AT+CWQAP"
-/* tylko dla ap */
-#define AT_AP_SETUP(a1,a2,a3,a4)	"AT+CWSAP="a1","a2","a3","a4
-#define AT_AP_SHOW_DEV				"AT+CWLIF"
+#define RESET						"AT+RST"
+#define SET_MODE(a)					"AT+CWMODE="a
+#define SET_MUX(a)					"AT+CIPMUX="a
+#define SETUP_SERVER(a1,a2)			"AT+CIPSERVER="a1","a2
+#define SHOW_IP						"AT+CIFSR"
+#define SEND_DATA_TO_CONN(a1, a2) 	"AT+CIPSEND="a1","a2
+#define CLOSE_CONN(a) 				"AT+CIPCLOSE="a
+#define SHOW_NETWORKS				"AT+CWLAP"
+#define CONN_TO_NETWORK				"AT+CWJAP=\"" /* 2 arg */
+#define DISCONNECT					"AT+CWQAP"
 
-#define MODE_CLI	"1"
-#define MODE_AP		"2"
-#define MODE_MIX	"3"
+#define CLIENT			"1"
+#define ACCESS_POINT	"2"
+#define MIXED			"3"
 
 #define RECEIVE_BUFFER_SIZE 	500
-#define NETWORK_LIST_TIMEOUT 	6000
+#define READY_DATA_SIZE			100
+#define NETWORK_LIST_TIMEOUT 	4000
+#define REQUEST_RECEIVE_TIMEOUT	500
+#define BYTE_RECEIVE_TIMEOUT	30
 #define MAX_SSID_LEN			100
+#define IP_SIZE					15
+
+#define CLIENT_IP_PATTERN 			"STAIP,\""
+#define OK_PATTERN 					"OK\r\n"
+#define REQUEST_RECIEVED_PATTERN 	"+IPD,"
 
 extern UART_HandleTypeDef huart3;
 extern ModeEnum Mode;
 
 char _receive[RECEIVE_BUFFER_SIZE];
+char _currentIP[IP_SIZE];
+
+char _connID;
+
+uint8_t _uartByte;
+uint8_t _requestIndex = 0;
 
 void _NET_ResetBuffer(void) {
 	for (int i = 0; i < RECEIVE_BUFFER_SIZE; i++) {
@@ -66,9 +52,35 @@ void _NET_ResetBuffer(void) {
 	}
 }
 
+void _NET_ResetIP(void) {
+	for (int i = 0; i < IP_SIZE; i++) {
+		_currentIP[i] = 0;
+	}
+}
+
+int _NET_GetIndexForPattern(char pattern[]) {
+	int find = 0;
+	int patternLen = strlen(pattern);
+
+	for (int cursor = 0; cursor < RECEIVE_BUFFER_SIZE; cursor++) {
+		if (find == patternLen) {
+			return cursor;
+		}
+
+		if (_receive[cursor] == pattern[find]) {
+			find++;
+		} else {
+			find = 0;
+		}
+	}
+	return -1;
+}
+
 uint8_t _NET_SendCommand(char command[], uint32_t tTimeout, uint32_t rTimeout) {
 	_NET_ResetBuffer();
 	size_t len = strlen(command);
+
+	HAL_UART_AbortReceive_IT(&huart3);
 
 	HAL_UART_Transmit(&huart3, (uint8_t*) command, len, tTimeout);
 	HAL_UART_Transmit(&huart3, (uint8_t*) "\r\n", 2, 1);
@@ -76,31 +88,34 @@ uint8_t _NET_SendCommand(char command[], uint32_t tTimeout, uint32_t rTimeout) {
 	HAL_UART_Receive(&huart3, (uint8_t*) _receive, RECEIVE_BUFFER_SIZE,
 			rTimeout);
 
+	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
+
 	/* szukaj odpowiedzi 'OK\r\n' */
-	for (int i = RECEIVE_BUFFER_SIZE; i >= 0; i--) {
-		if (_receive[i] == '\n' && _receive[i - 1] == '\r'
-				&& _receive[i - 2] == 'K' && _receive[i - 3] == 'O') {
-			return 0;
-		}
+	if (_NET_GetIndexForPattern(OK_PATTERN) != -1) {
+		return 0;
 	}
 	/* komunikat niekompletny lub niepoprawny */
 	return 1;
 }
 
 void _NET_SetClientDConnMode(void) {
-	while (_NET_SendCommand(AT_RESET, 1, 50) != 0)
+	while (_NET_SendCommand(RESET, 1, 50) != 0)
 		HAL_Delay(1);
-	while (_NET_SendCommand(AT_SET_MODE(MODE_CLI), 5, 100) != 0)
+	while (_NET_SendCommand(SET_MODE(MIXED), 5, 100) != 0)
 		HAL_Delay(1);
 	NET_WiFiDisconnect();
 }
 
 void NET_Init(void) {
 	_NET_SetClientDConnMode();
+
+	_connID = 0;
+	_uartByte = 0;
+	_requestIndex = 0;
 }
 
 char* NET_RequestNetworkList(void) {
-	if (_NET_SendCommand(AT_CLI_SHOW_NETWORKS, 1, NETWORK_LIST_TIMEOUT) == 0) {
+	if (_NET_SendCommand(SHOW_NETWORKS, 1, NETWORK_LIST_TIMEOUT) == 0) {
 		int index = 0;
 		for (int cursor = 0; cursor < RECEIVE_BUFFER_SIZE; cursor++) {
 			if (_receive[cursor] == '(') {
@@ -187,7 +202,7 @@ char* NET_RequestNetworkList(void) {
 uint8_t NET_ConnectToWiFi(char *password, int network) {
 	int ssidIndex = 0;
 	int cmdIndex = 0;
-	char cmd[RECEIVE_BUFFER_SIZE] = { 0 };
+	char cmd[100] = { 0 };
 
 	/* ustaw indeks na wlasciwym ssid */
 	for (int i = 0; i < network - 1; i++) {
@@ -195,8 +210,8 @@ uint8_t NET_ConnectToWiFi(char *password, int network) {
 			;
 	}
 
-	strcpy(cmd, R_AT_CLI_CONN_TO);
-	cmdIndex += strlen(R_AT_CLI_CONN_TO);
+	strcpy(cmd, CONN_TO_NETWORK);
+	cmdIndex += strlen(CONN_TO_NETWORK);
 
 	for (int i = 0;; i++) {
 		if (_receive[ssidIndex] == '-') {
@@ -212,6 +227,8 @@ uint8_t NET_ConnectToWiFi(char *password, int network) {
 
 	if (_NET_SendCommand(cmd, 10, NETWORK_LIST_TIMEOUT) == 0) {
 		Mode = MD_ClientConn;
+		NET_HTTPSetup();
+
 		return 0;
 	}
 	Mode = MD_LostHost;
@@ -219,30 +236,111 @@ uint8_t NET_ConnectToWiFi(char *password, int network) {
 }
 
 char* NET_GetConnInfo(void) {
-	if ((Mode == MD_ClientConn || Mode == MD_LostHost) && _NET_SendCommand(AT_CLI_SHOW_IP, 5, 50) == 0) {
-		int cursor = 0, index = 0;
-		while (_receive[cursor++] != '"')
-			;
+	if ((Mode == MD_ClientConn || Mode == MD_LostHost)
+			&& _NET_SendCommand(SHOW_IP, 5, 100) == 0) {
+		int cursor = _NET_GetIndexForPattern(CLIENT_IP_PATTERN);
+		int index = 0;
+
+		_NET_ResetIP();
 		/* bierzemy tylko ip */
 		while (_receive[cursor] != '"') {
-			_receive[index++] = _receive[cursor++];
+			_currentIP[index++] = _receive[cursor++];
+
+			if (index - 1 > 15) {
+				Mode = MD_LostHost;
+				return NULL; /* to nie jest adres ip */
+			}
 		}
-		_receive[index] = 0;
-		if (index - 1 > 15) return NULL; /* to nie jest adres ip */
-		Mode = MD_ClientConn;
 
 		if (strcmp("0.0.0.0", _receive) == 0) {
 			Mode = MD_LostHost;
 			return NULL;
 		}
+		/* jesli uda sie nawiazac polaczenie pozniej, ustaw serwer */
+		if (Mode == MD_LostHost) {
+			NET_HTTPSetup();
+			Mode = MD_ClientConn;
+		}
 	}
 
-	return (char*) _receive;
+	return (char*) _currentIP;
 }
 
 uint8_t NET_WiFiDisconnect(void) {
-	while (_NET_SendCommand(AT_CLI_DISCONN, 5, 100) != 0)
+	while (_NET_SendCommand(DISCONNECT, 5, 100) != 0)
 		HAL_Delay(1);
 	Mode = MD_ClientDConn;
 	return 0;
+}
+
+uint8_t NET_HTTPSetup(void) {
+	while (_NET_SendCommand(SET_MUX("1"), 5, 100) != 0)
+		HAL_Delay(1);
+	while (_NET_SendCommand(SETUP_SERVER("1", "80"), 5, 100) != 0)
+		HAL_Delay(1);
+
+	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
+	/* gniazdo tcp juz nasluchuje na porcie 80 */
+	return 0;
+}
+
+void NET_SendDataAndCloseConn(char connID, char *data) {
+	char cmd[100] = { 0 };
+
+	sprintf(cmd, SEND_DATA_TO_CONN("%c", "%d"), connID, strlen(data));
+	_NET_SendCommand(cmd, 5, 100);
+
+	HAL_Delay(10);
+
+	HAL_UART_Transmit(&huart3, (uint8_t*) data, strlen(data), 5000);
+
+	for (int i = 0; i < 100; i++)
+		cmd[i] = 0;
+
+	HAL_Delay(50);
+
+	sprintf(cmd, CLOSE_CONN("%c"), _connID);
+	_NET_SendCommand(cmd, 5, 100);
+}
+
+void NET_HandleUART_IT(void) {
+	if (_uartByte == REQUEST_RECIEVED_PATTERN[_requestIndex++]) {
+		if (_requestIndex == strlen(REQUEST_RECIEVED_PATTERN)) {
+			/* odczyt id polaczenia */
+			HAL_UART_Receive(&huart3, (uint8_t*) &_connID, 1,
+			BYTE_RECEIVE_TIMEOUT);
+			/* odczyt ilosci danych do odebrania */
+			char lenString[5] = { 0 }, tempChar = 0;
+			int lenIndex = 0;
+
+			while (tempChar != ':') {
+				HAL_UART_Receive(&huart3, (uint8_t*) &tempChar, 1,
+				BYTE_RECEIVE_TIMEOUT);
+				/* jebaniutki nie chce w nulla */
+				if (tempChar == ',')
+					continue;
+
+				lenString[lenIndex++] = tempChar;
+			}
+			/* bez dwukropka */
+			lenString[--lenIndex] = 0;
+
+			uint16_t requestLen = atoi(lenString);
+			requestLen = (requestLen > RECEIVE_BUFFER_SIZE) ?
+			RECEIVE_BUFFER_SIZE : requestLen;
+			/* odbierz zadanie */
+			HAL_UART_Receive(&huart3, (uint8_t*) _receive, requestLen,
+			REQUEST_RECEIVE_TIMEOUT);
+
+			char* response = HTTP_HandleRequest((char*) _receive);
+			if (response != NULL) {
+				NET_SendDataAndCloseConn(_connID, response);
+			}
+		}
+	} else {
+		/* nieistotne dane */
+		_requestIndex = 0;
+	}
+
+	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
 }

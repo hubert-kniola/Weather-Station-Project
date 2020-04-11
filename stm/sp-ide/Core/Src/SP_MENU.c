@@ -445,6 +445,8 @@ void MENU_Clock(void) {
 
 uint8_t MENU_HandleKeys(void) {
 	IfPressed (UP) {
+		LCD_WakeScreen();
+
 		if (State == ST_Clock) {
 			/* Przejdz w ekran opcji */
 			MENU_Options();
@@ -476,6 +478,8 @@ uint8_t MENU_HandleKeys(void) {
 		return 1;
 
 	} Or (DOWN) {
+		LCD_WakeScreen();
+
 		if (State == ST_Options) {
 			if (_optionsRow < 3) {
 				_optionsRow = LCD_CursorDown();
@@ -492,6 +496,7 @@ uint8_t MENU_HandleKeys(void) {
 			_CLK_ParseAndSetDateTime();
 			MENU_Clock();
 		} else if (State == ST_WiFi) {
+			//TODO DEBUG n TESTING
 			if (_optionsRow < 4 && _optionsRow < _networksIn - 1) {
 				_optionsRow = LCD_CursorDown();
 				_currentOption++;
@@ -505,6 +510,8 @@ uint8_t MENU_HandleKeys(void) {
 		return 1;
 
 	} Or (LEFT) {
+		LCD_WakeScreen();
+
 		if (State == ST_PassInput) {
 			/* Poprzedni znak w jednej z dwoch kolumn */
 			if (_PWD_index > 0) {
@@ -523,6 +530,8 @@ uint8_t MENU_HandleKeys(void) {
 		return 1;
 
 	} Or (RIGHT) {
+		LCD_WakeScreen();
+
 		if (State == ST_PassInput) {
 			/* Kolejny znak w jednej z dwoch kolumn */
 			if (WiFiPassword[_PWD_index] != 0 && _PWD_index < MAX_PASSWD_LEN - 1) {

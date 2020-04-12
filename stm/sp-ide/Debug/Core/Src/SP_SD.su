@@ -1,8 +1,8 @@
-SP_SD.c:30:10:_SD_GetFreeSpace	16	static
-SP_SD.c:42:6:_SD_FormatDisk	16	static
-SP_SD.c:47:6:SD_Init	8	static
-SP_SD.c:55:6:_SD_ClearDateTimeRegisters	4	static
-SP_SD.c:71:6:SD_RefreshDateTime	8	static
-SP_SD.c:92:6:SD_GetDateTime	40	static
-SP_SD.c:99:6:SD_SetDateTime	16	static
-SP_SD.c:125:9:SD_WriteJSON	16	static
+SP_SD.c:32:10:_SD_GetDiskSpace	16	static
+SP_SD.c:44:6:_SD_FormatDisk	16	static
+SP_SD.c:50:6:SD_Init	8	static
+SP_SD.c:58:6:_SD_ClearDateTimeRegisters	4	static
+SP_SD.c:74:6:SD_RefreshDateTime	8	static
+SP_SD.c:95:6:SD_GetDateTime	40	static
+SP_SD.c:102:6:SD_SetDateTime	16	static
+SP_SD.c:128:9:SD_WriteFile	24	static

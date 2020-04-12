@@ -2,12 +2,15 @@
 
 #include "ff.h"
 
+#include <string.h>
 #include <stdio.h>
 
 typedef struct {
 	uint8_t date[6];
 	uint8_t time[6];
 } SD_Time;
+
+#define MAX_FILESIZE 1000000
 
 /* ----------------- Konfiguracja uzytkownika ------------------- */
 extern RTC_HandleTypeDef hrtc;
@@ -24,8 +27,16 @@ FIL _fileH;
 SD_Time _dTime;
 
 BYTE _work[FF_MAX_SS];
-uint32_t _writtenB;
-uint32_t _readB;
+UINT _writtenB;
+UINT _readB;
+
+BYTE _buffer[MAX_FILESIZE];
+
+void _SD_ResetBuffer(void) {
+	for (int i = 0; i < MAX_FILESIZE; i++) {
+		_buffer[i] = 0;
+	}
+}
 
 uint32_t _SD_GetDiskSpace(void) {
 	FATFS *ptr;
@@ -39,21 +50,16 @@ uint32_t _SD_GetDiskSpace(void) {
 	return ((ptr->n_fatent - 2) * ptr->csize) / 2; /* kilobajty */
 }
 
-void _SD_InitDisk(void) {
-
-}
-
 void _SD_FormatDisk(void) {
 	/* fat32 */
-	while (f_mkfs("", FM_FAT32, (DWORD)0, _work, sizeof(_work)) != FR_OK) HAL_Delay(1);
+	while (f_mkfs("", FM_FAT32, (DWORD) 0, _work, sizeof(_work)) != FR_OK)
+		HAL_Delay(1);
 	_SD_GetDiskSpace();
-	/* init wymaganych plikow */
-	_SD_InitDisk();
 }
 
 void SD_Init(void) {
 	if (f_mount(&_ff, "", 1) == FR_NO_FILESYSTEM) {
-		_SD_FormatDisk();
+		//TODO Fatal
 	}
 
 	SD_RefreshDateTime();
@@ -118,6 +124,22 @@ void SD_SetDateTime(uint8_t date[], uint8_t time[]) {
 	HAL_RTC_SetDate(&hrtc, &_Date, RTC_FORMAT_BCD);
 }
 
+char* SD_ReadFile(char *filename, uin32_t bytesToRead) {
+	if (f_open(&_fileH, filename, FA_READ) != FR_OK) {
+		return NULL;
+	}
+
+	_SD_ResetBuffer();
+
+	_res = f_read(&_fileH, _buffer, bytesToRead, _readB);
+	if (_res != FR_OK || _readB != bytesToRead) {
+		return NULL;
+	}
+
+	f_close(&_fileH);
+	return (char*) _buffer;
+}
+
 /* Template structure
  *
  * {
@@ -129,7 +151,20 @@ void SD_SetDateTime(uint8_t date[], uint8_t time[]) {
  * 		"date"   : "03.30.20"
  * }
  */
-uint8_t SD_WriteJSON(float *data) {
-	//TODO zapis i odczyt plikow
-	return 1;
+uint8_t SD_WriteFile(char *filename, char *data) {
+	uint32_t len = strlen(data);
+	_SD_GetDiskSpace();
+
+	if (len > DISK_LEFT) {
+		return 1;
+	}
+
+	if (f_open(&_fileH, filename, FA_OPEN_ALWAYS | FA_WRITE) != FR_OK) {
+		return 2;
+	}
+
+	f_write(&_fileH, data, len, &_writtenB);
+
+	f_close(&_fileH);
+	return 0;
 }

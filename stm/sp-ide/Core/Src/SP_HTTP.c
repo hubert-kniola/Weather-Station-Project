@@ -1,29 +1,88 @@
 #include "SP_HTTP.h"
+#include "SP_SD.h"
+#include "SP_NET.h"
 
 #include <string.h>
+#include <stdio.h>
+#include <stdbool.h>
 
-#define MAX_PAGE_SIZE	500
+#define GET_FILE_PATTERN 	"GET /"
 
-char WEBPAGE[MAX_PAGE_SIZE] = { 0 };
+#define MAX_FILENAME_LEN	13
+#define MAX_RESPONSE_LEN	400
+#define MAX_LINE_LEN		100
+
+#define RSP_NOT_FOUND 	"404 Not Found"
+#define RSP_OK			"200 OK"
+
+#define CT_JS 		"text/javascript"
+#define CT_CSS 		"text/css"
+#define CT_HTML 	"text/html"
+
+#define CN_CLOSE 	"close"
+#define CN_KEEP		"keep-alive"
+
+char _response[MAX_RESPONSE_LEN];
+char _line[MAX_LINE_LEN];
+
+#define _resetResponse() for(int i=0;i<MAX_RESPONSE_LEN;i++)_response[i]=0
+#define _resetLine() for(int i=0;i<MAX_LINE_LEN;i++)_line[i]=0
 
 void HTTP_Init(void) {
-	strcpy(WEBPAGE, "HTTP/1.1 200 OK\r\n");
-	strcat(WEBPAGE, "Content-Type: text/html\r\n");
-	strcat(WEBPAGE, "Content-Lenght: 398\r\n");
-	strcat(WEBPAGE, "Connection: close\r\n\r\n");
-	strcat(WEBPAGE, "<!DOCTYPE html>\r\n<html>\r\n<head>\r\n");
-	strcat(WEBPAGE, "<title>Dioda RGB</title>\r\n</head>\r\n");
-	strcat(WEBPAGE, "<body>\r\n<form method=\"get\">\r\n");
-	strcat(WEBPAGE, "<p><b>Czerwony (0-255):</b> <input type=\"text\"");
-	strcat(WEBPAGE, " name=\"red\" value=\"0\" /></p>\r\n");
-	strcat(WEBPAGE, "<p><b>Zielony (0-255):</b> <input type=\"text\"");
-	strcat(WEBPAGE, " name=\"green\" value=\"0\" /></p>\r\n");
-	strcat(WEBPAGE, "<p><b>Niebieski (0-255):</b> <input type=\"text\"");
-	strcat(WEBPAGE, " name=\"blue\" value=\"0\" /></p>\r\n");
-	strcat(WEBPAGE, "<input type=\"submit\" value=\"Ustaw kolor\" />\r\n");
-	strcat(WEBPAGE, "</form>\r\n</body>\r\n</html>");
+
 }
 
-char* HTTP_HandleRequest(char* request) {
-	return (char*) WEBPAGE;
+char* _HTTP_ParseHeader(char *response, char *contentType, uint32_t length,
+		char *connection) {
+	_resetResponse();
+	_resetLine();
+
+	sprintf(_line, "HTTP/1.1 %s\r\n", response);
+	strcpy(_response, _line);
+	_resetLine();
+
+	sprintf(_line, "Content-Type: %s\r\n", contentType);
+	strcat(_response, _line);
+	_resetLine();
+
+	sprintf(_line, "Content-Lenght: %ld\r\n", length);
+	strcat(_response, _line);
+	_resetLine();
+
+	sprintf(_line, "Connection: %s\r\n\r\n", connection);
+	strcat(_response, _line);
+
+	return (char*) _response;
+}
+
+void HTTP_HandleRequest(char *request, char connID) {
+	int cursor = NET_GetIndexForPattern(GET_FILE_PATTERN);
+	int index = 0;
+
+	if (cursor != -1) {
+		while (request[cursor++] != ' ')
+			;
+	}
+
+	if (index == 0) {
+		uint32_t size = 0;
+		bool close = false;
+
+		char *data = SD_ReadFile("index.htm", &size);
+		char *header = _HTTP_ParseHeader(RSP_OK, CT_HTML, size, CN_KEEP);
+
+		if (NET_GetIndexForPattern(CN_KEEP) == -1) {
+			close = true;
+		}
+
+		NET_SendData(connID, header);
+		NET_SendData(connID, data);
+
+		NET_CloseConn(connID);
+
+	} else {
+		NET_SendData(connID,
+				_HTTP_ParseHeader(RSP_NOT_FOUND, CT_HTML, 0, CN_CLOSE));
+		NET_CloseConn(connID);
+	}
 }

@@ -30,6 +30,8 @@
 #define BYTE_RECEIVE_TIMEOUT	30
 #define MAX_SSID_LEN			100
 #define IP_SIZE					15
+#define PACKET_SIZE				1024
+#define PACKET_INTERVAL			20
 
 #define CLIENT_IP_PATTERN 			"STAIP,\""
 #define OK_PATTERN 					"OK\r\n"
@@ -58,7 +60,7 @@ void _NET_ResetIP(void) {
 	}
 }
 
-int _NET_GetIndexForPattern(char pattern[]) {
+int NET_GetIndexForPattern(char pattern[]) {
 	int find = 0;
 	int patternLen = strlen(pattern);
 
@@ -88,10 +90,8 @@ uint8_t _NET_SendCommand(char command[], uint32_t tTimeout, uint32_t rTimeout) {
 	HAL_UART_Receive(&huart3, (uint8_t*) _receive, RECEIVE_BUFFER_SIZE,
 			rTimeout);
 
-	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
-
 	/* szukaj odpowiedzi 'OK\r\n' */
-	if (_NET_GetIndexForPattern(OK_PATTERN) != -1) {
+	if (NET_GetIndexForPattern(OK_PATTERN) != -1) {
 		return 0;
 	}
 	/* komunikat niekompletny lub niepoprawny */
@@ -238,7 +238,7 @@ uint8_t NET_ConnectToWiFi(char *password, int network) {
 char* NET_GetConnInfo(void) {
 	if ((Mode == MD_ClientConn || Mode == MD_LostHost)
 			&& _NET_SendCommand(SHOW_IP, 5, 100) == 0) {
-		int cursor = _NET_GetIndexForPattern(CLIENT_IP_PATTERN);
+		int cursor = NET_GetIndexForPattern(CLIENT_IP_PATTERN);
 		int index = 0;
 
 		_NET_ResetIP();
@@ -263,6 +263,8 @@ char* NET_GetConnInfo(void) {
 		}
 	}
 
+	/* wznow nasluchiwanie */
+	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
 	return (char*) _currentIP;
 }
 
@@ -282,25 +284,6 @@ uint8_t NET_HTTPSetup(void) {
 	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
 	/* gniazdo tcp juz nasluchuje na porcie 80 */
 	return 0;
-}
-
-void NET_SendDataAndCloseConn(char connID, char *data) {
-	char cmd[100] = { 0 };
-
-	sprintf(cmd, SEND_DATA_TO_CONN("%c", "%d"), connID, strlen(data));
-	_NET_SendCommand(cmd, 5, 100);
-
-	HAL_Delay(10);
-
-	HAL_UART_Transmit(&huart3, (uint8_t*) data, strlen(data), 5000);
-
-	for (int i = 0; i < 100; i++)
-		cmd[i] = 0;
-
-	HAL_Delay(50);
-
-	sprintf(cmd, CLOSE_CONN("%c"), _connID);
-	_NET_SendCommand(cmd, 5, 100);
 }
 
 void NET_HandleUART_IT(void) {
@@ -327,15 +310,13 @@ void NET_HandleUART_IT(void) {
 
 			uint16_t requestLen = atoi(lenString);
 			requestLen = (requestLen > RECEIVE_BUFFER_SIZE) ?
-			RECEIVE_BUFFER_SIZE : requestLen;
+			RECEIVE_BUFFER_SIZE :
+																requestLen;
 			/* odbierz zadanie */
 			HAL_UART_Receive(&huart3, (uint8_t*) _receive, requestLen,
 			REQUEST_RECEIVE_TIMEOUT);
 
-			char* response = HTTP_HandleRequest((char*) _receive);
-			if (response != NULL) {
-				NET_SendDataAndCloseConn(_connID, response);
-			}
+			HTTP_HandleRequest((char*) _receive, _connID);
 		}
 	} else {
 		/* nieistotne dane */
@@ -343,4 +324,37 @@ void NET_HandleUART_IT(void) {
 	}
 
 	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
+}
+
+#define __CMD_SIZE 20
+#define __resetCmd() for(int i=0;i<__CMD_SIZE;i++)cmd[i]=0
+
+void NET_SendData(char connID, char *data) {
+	char cmd[__CMD_SIZE ];
+	uint32_t len = strlen(data), index = 0;
+
+	while (len > index) {
+		/* dziel dane na paczki i odsylaj dokument */
+		int toSend = (len - index > PACKET_SIZE) ? PACKET_SIZE : len - index;
+
+		__resetCmd();
+		sprintf(cmd, SEND_DATA_TO_CONN("%c", "%d"), connID, toSend);
+		while (_NET_SendCommand(cmd, 5, 100) != 0)
+			;
+
+		HAL_Delay(PACKET_INTERVAL);
+
+		for (int i = 0; i < toSend; i++) {
+			HAL_UART_Transmit(&huart3, (uint8_t*) &(data[index++]), 1, 100);
+		}
+
+		HAL_Delay(6 * PACKET_INTERVAL);
+	}
+}
+
+void NET_CloseConn(char connID) {
+	char cmd[__CMD_SIZE] = {0};
+
+	sprintf(cmd, CLOSE_CONN("%c"), _connID);
+	_NET_SendCommand(cmd, 5, 100);
 }

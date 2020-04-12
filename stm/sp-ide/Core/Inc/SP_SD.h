@@ -10,5 +10,6 @@ void SD_GetDateTime(char[], char[]);
 void SD_SetDateTime(uint8_t[], uint8_t[]);
 
 uint8_t SD_WriteFile(char*, char*);
+char* SD_ReadFile(char*, uint32_t*);
 
 #endif

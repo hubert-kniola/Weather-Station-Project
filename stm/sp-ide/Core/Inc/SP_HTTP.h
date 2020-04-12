@@ -4,6 +4,6 @@
 #include "main.h"
 
 void HTTP_Init(void);
-char* HTTP_HandleRequest(char *);
+void HTTP_HandleRequest(char*, char);
 
 #endif

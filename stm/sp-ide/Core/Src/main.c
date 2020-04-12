@@ -32,6 +32,8 @@
 #include "SP_MENU.h"
 #include "SP_HTTP.h"
 
+#include <stdbool.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -84,6 +86,7 @@ static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN 0 */
 
 uint8_t _led = 0;
+bool Update = true;
 
 /* USER CODE END 0 */
 
@@ -144,15 +147,15 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 
 	LCD_ClearScreen();
-	int check = 1000001;
 
 	while (1) {
-
-		MENU_HandleKeys();
-
-		if (check++ > 720000 && State == ST_Clock) {
+		if (Update && State == ST_Clock) {
 			MENU_Clock();
-			check = 0;
+			Update = false;
+		}
+
+		if (MENU_HandleKeys()) {
+			Update = true;
 		}
 
 		/* USER CODE END WHILE */
@@ -511,7 +514,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOD,
-			STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin,
+	STM_Green_Pin | STM_Orange_Pin | STM_Red_Pin | STM_Blue_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pins : LCD_D6_Pin LCD_D7_Pin LCD_RS_Pin LCD_RW_Pin
@@ -577,6 +580,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		THS_ErrorClock();
 	} else if (htim->Instance == TIM3 && State == ST_Clock) {
 		LCD_BackgroundOff();
+		Update = true;
 	}
 }
 
@@ -584,8 +588,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if (GPIO_Pin == GPIO_PIN_0) {
 		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
 		{
-			if (++_led > 9)
+			if (++_led > 9) {
 				_led = 0;
+			}
 		}
 	}
 }

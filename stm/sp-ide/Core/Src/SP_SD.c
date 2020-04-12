@@ -10,7 +10,7 @@ typedef struct {
 	uint8_t time[6];
 } SD_Time;
 
-#define MAX_FILESIZE 1000000
+#define MAX_FILESIZE 10000
 
 /* ----------------- Konfiguracja uzytkownika ------------------- */
 extern RTC_HandleTypeDef hrtc;
@@ -124,19 +124,21 @@ void SD_SetDateTime(uint8_t date[], uint8_t time[]) {
 	HAL_RTC_SetDate(&hrtc, &_Date, RTC_FORMAT_BCD);
 }
 
-char* SD_ReadFile(char *filename, uin32_t bytesToRead) {
+char* SD_ReadFile(char *filename, uint32_t *size) {
 	if (f_open(&_fileH, filename, FA_READ) != FR_OK) {
+		*size = 0;
 		return NULL;
 	}
 
 	_SD_ResetBuffer();
+	uint32_t index = 0;
 
-	_res = f_read(&_fileH, _buffer, bytesToRead, _readB);
-	if (_res != FR_OK || _readB != bytesToRead) {
-		return NULL;
+	while (!f_eof(&_fileH)) {
+		_res = f_read(&_fileH, &_buffer[index++], 1, &_readB);
 	}
 
 	f_close(&_fileH);
+	*size = index;
 	return (char*) _buffer;
 }
 

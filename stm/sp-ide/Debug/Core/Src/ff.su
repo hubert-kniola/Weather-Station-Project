@@ -49,3 +49,11 @@ ff.c:4721:9:f_truncate	32	static
 ff.c:4771:9:f_unlink	120	static
 ff.c:4865:9:f_mkdir	96	static
 ff.c:4949:9:f_rename	160	static
+ff.c:5529:9:f_mkfs	128	static
+ff.c:6077:8:f_gets	48	static
+ff.c:6218:13:putc_bfd	32	static
+ff.c:6349:12:putc_flush	24	static
+ff.c:6362:13:putc_init	16	static
+ff.c:6373:5:f_putc	96	static
+ff.c:6393:5:f_puts	96	static
+ff.c:6413:5:f_printf	164	static

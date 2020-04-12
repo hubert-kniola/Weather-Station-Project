@@ -1,5 +1,7 @@
 #include "SP_SD.h"
+
 #include "ff.h"
+
 #include <stdio.h>
 
 typedef struct {
@@ -14,17 +16,45 @@ extern RTC_HandleTypeDef hrtc;
 RTC_TimeTypeDef _Time;
 RTC_DateTypeDef _Date;
 
-static FATFS _ffHandle; //uchwyt do urządzenia FatFs (dysku, karty SD...)
-FRESULT _fresult; //do przechowywania wyniku operacji na bibliotece
-FIL _fileHandle; //uchwyt do otwartego plik
+FATFS _ff;
+uint32_t DISK_LEFT;
+
+FRESULT _res;
+FIL _fileH;
 SD_Time _dTime;
 
-uint8_t _buffer[256]; //bufor odczytu i zapisu
-uint16_t _bytesWritten; //liczba zapisanych byte
-uint16_t _bytesRead;
+BYTE _work[FF_MAX_SS];
+uint32_t _writtenB;
+uint32_t _readB;
+
+uint32_t _SD_GetDiskSpace(void) {
+	FATFS *ptr;
+	uint32_t fre_clust = 0;
+
+	if (f_getfree("", &fre_clust, &ptr) != FR_OK) {
+		return 0;
+	}
+
+	DISK_LEFT = (fre_clust * ptr->csize) / 2;
+	return ((ptr->n_fatent - 2) * ptr->csize) / 2; /* kilobajty */
+}
+
+void _SD_InitDisk(void) {
+
+}
+
+void _SD_FormatDisk(void) {
+	/* fat32 */
+	while (f_mkfs("", FM_FAT32, (DWORD)0, _work, sizeof(_work)) != FR_OK) HAL_Delay(1);
+	_SD_GetDiskSpace();
+	/* init wymaganych plikow */
+	_SD_InitDisk();
+}
 
 void SD_Init(void) {
-	f_mount(&_ffHandle, "", 0);
+	if (f_mount(&_ff, "", 1) == FR_NO_FILESYSTEM) {
+		_SD_FormatDisk();
+	}
 
 	SD_RefreshDateTime();
 }

@@ -29,7 +29,7 @@
 #define BYTE_RECEIVE_TIMEOUT	30
 #define MAX_SSID_LEN			100
 #define IP_SIZE					15
-#define PACKET_SIZE				2048
+#define PACKET_SIZE				2000
 #define PACKET_INTERVAL			20
 
 #define CLIENT_IP_PATTERN 			"STAIP,\""
@@ -54,9 +54,13 @@ void _NET_ResetIP(void) {
 	}
 }
 
-void _NET_StartReceiveIT(void) {
+void NET_StartIT(void) {
 	_NET_ResetBuffer();
 	HAL_UART_Receive_IT(&huart3, (uint8_t*) &(_receive[0]), 1);
+}
+
+void NET_AbortIT(void) {
+	HAL_UART_AbortReceive_IT(&huart3);
 }
 
 int NET_GetIndexForPattern(char pattern[]) {
@@ -81,7 +85,7 @@ uint8_t _NET_SendCommand(char command[], uint32_t tTimeout, uint32_t rTimeout) {
 	_NET_ResetBuffer();
 	size_t len = strlen(command);
 
-	HAL_UART_AbortReceive_IT(&huart3);
+	NET_AbortIT();
 
 	HAL_UART_Transmit(&huart3, (uint8_t*) command, len, tTimeout);
 	HAL_UART_Transmit(&huart3, (uint8_t*) "\r\n", 2, 1);
@@ -259,7 +263,7 @@ char* NET_GetConnInfo(void) {
 	}
 
 	/* wznow nasluchiwanie */
-	_NET_StartReceiveIT();
+	NET_StartIT();
 	return (char*) _currentIP;
 }
 
@@ -276,7 +280,6 @@ uint8_t NET_HTTPSetup(void) {
 	while (_NET_SendCommand(SETUP_SERVER("1", "80"), 5, 100) != 0)
 		HAL_Delay(1);
 
-	/* gniazdo tcp juz nasluchuje na porcie 80 */
 	return 0;
 }
 
@@ -302,7 +305,7 @@ void NET_HandleUART_IT(void) {
 		HTTP_HandleRequest((char*) _receive, connID);
 	}
 
-	_NET_StartReceiveIT();
+	NET_StartIT();
 }
 
 #define __CMD_SIZE 20
@@ -318,16 +321,17 @@ void NET_SendTCPData(char connID, char *data) {
 
 		__resetCmd();
 		sprintf(cmd, SEND_DATA_TO_CONN("%c", "%d"), connID, toSend);
-		while (_NET_SendCommand(cmd, 5, 100) != 0)
-			;
+		if (_NET_SendCommand(cmd, 5, 100) != 0) {
+			HAL_Delay(10 * PACKET_INTERVAL);
+		}
 
-		HAL_Delay(PACKET_INTERVAL);
+		HAL_Delay(5 * PACKET_INTERVAL);
 
 		for (int i = 0; i < toSend; i++) {
 			HAL_UART_Transmit(&huart3, (uint8_t*) &(data[index++]), 1, 100);
 		}
 
-		HAL_Delay(5 * PACKET_INTERVAL);
+		HAL_Delay(20 * PACKET_INTERVAL);
 	}
 }
 

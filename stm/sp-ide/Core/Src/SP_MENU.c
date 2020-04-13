@@ -436,8 +436,12 @@ void MENU_Clock(void) {
 
 	LCD_PrintDateTime(date, time);
 
+	/* update jsona do wyslania dla strony, nie przeszkadzac */
+	NET_AbortIT();
+
 	if (THS_ReadData(THS_In, data)) {
 		LCD_PrintTempInfo(data, NULL);
+		SD_CreateJson(true, data, date, time);
 	}
 
 	LCD_PrintNetworkStatus(Mode, NET_GetConnInfo());

@@ -18,6 +18,7 @@
 #define CT_JS 		"text/javascript"
 #define CT_CSS 		"text/css"
 #define CT_HTML 	"text/html"
+#define CT_JSON		"text/json"
 
 #define CN_CLOSE 	"close"
 #define CN_KEEP		"keep-alive"
@@ -57,7 +58,7 @@ char* _HTTP_ParseHeader(char *response, char *contentType, uint32_t length,
 	return (char*) _response;
 }
 
-char* _NET_GetRequest(char *request) {
+char* _HTTP_GetRequestUrl(char *request) {
 	int cursor = NET_GetIndexForPattern(GET_FILE_PATTERN);
 	int index = 0;
 
@@ -72,7 +73,7 @@ char* _NET_GetRequest(char *request) {
 }
 
 void HTTP_HandleRequest(char *request, char connID) {
-	char *req = _NET_GetRequest(request);
+	char *req = _HTTP_GetRequestUrl(request);
 	char *header;
 	char *file;
 	uint32_t size;
@@ -85,10 +86,17 @@ void HTTP_HandleRequest(char *request, char connID) {
 		NET_SendTCPData(connID, file);
 
 		NET_CloseConnSignal(connID);
-	}
-	OR_GET("/#about") {
 
-	} else {
+	} OR_GET("/now") {
+		file = SD_ReadFile("wynik.jso", &size);
+		header = _HTTP_ParseHeader(RSP_OK, CT_JSON, size, CN_CLOSE);
+
+		NET_SendTCPData(connID, header);
+		NET_SendTCPData(connID, file);
+
+		NET_CloseConnSignal(connID);
+	}
+	else {
 		/* nieobslugiwane zadanie */
 		header = _HTTP_ParseHeader(RSP_NOT_FOUND, CT_HTML, 0, CN_CLOSE);
 		NET_SendTCPData(connID, header);

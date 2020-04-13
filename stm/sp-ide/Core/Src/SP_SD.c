@@ -145,27 +145,32 @@ char* SD_ReadFile(char *filename, uint32_t *size) {
 /* Template structure
  *
  * {
- * 		"innTHS" : true,
- * 		"temper" : 24,
- * 		"humidi" : 35,
- * 		"locati" : "PL",
- * 		"time"	 : "12:03:30",
- * 		"date"   : "03.30.20"
+ * 		"inn" : 1,
+ * 		"temp" : 24,
+ * 		"hum" : 35,
+ * 		"date"   : "03.30.20",
+ * 		"time"	 : "12:03:30"
  * }
  */
-uint8_t SD_WriteFile(char *filename, char *data) {
-	uint32_t len = strlen(data);
+uint8_t SD_CreateJson(bool innTHS, float data[], char date[], char time[]) {
+	_SD_ResetBuffer();
+	/* oof */
+	uint32_t len =
+			sprintf((char*) _buffer,
+					"{\r\n\"inn\":%s,\r\n\"temp\":%.0f,\r\n\"hum\":%.0f,\r\n\"date\":\"%s\",\r\n\"time\":\"%s\"\r\n}",
+					innTHS ? "true" : "false", data[0], data[1], date, time);
+
 	_SD_GetDiskSpace();
 
 	if (len > DISK_LEFT) {
 		return 1;
 	}
 
-	if (f_open(&_fileH, filename, FA_OPEN_ALWAYS | FA_WRITE) != FR_OK) {
+	if (f_open(&_fileH, "wynik.jso", FA_OPEN_ALWAYS | FA_WRITE) != FR_OK) {
 		return 2;
 	}
 
-	f_write(&_fileH, data, len, &_writtenB);
+	f_write(&_fileH, _buffer, len, &_writtenB);
 
 	f_close(&_fileH);
 	return 0;

@@ -18,4 +18,7 @@ void NET_HandleUART_IT(void);
 void NET_SendTCPData(char, char*);
 void NET_CloseConnSignal(char);
 
+void NET_StartIT(void);
+void NET_AbortIT(void);
+
 #endif

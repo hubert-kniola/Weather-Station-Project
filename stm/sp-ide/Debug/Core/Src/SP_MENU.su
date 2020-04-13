@@ -13,4 +13,4 @@ SP_MENU.c:340:9:_WiFi_NofNetworks	24	static
 SP_MENU.c:354:6:_WiFi_RequestConn	24	static
 SP_MENU.c:386:6:MENU_OptionsWifiList	16	static
 SP_MENU.c:423:6:MENU_Clock	48	static
-SP_MENU.c:446:9:MENU_HandleKeys	8	static
+SP_MENU.c:450:9:MENU_HandleKeys	8	static

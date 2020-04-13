@@ -1,3 +1,3 @@
-SP_HTTP.c:31:6:HTTP_Init	4	static
-SP_HTTP.c:35:7:_HTTP_ParseHeader	48	static
-SP_HTTP.c:58:6:HTTP_HandleRequest	40	static
+SP_HTTP.c:37:7:_HTTP_ParseHeader	48	static
+SP_HTTP.c:60:7:_NET_GetRequest	32	static
+SP_HTTP.c:74:6:HTTP_HandleRequest	32	static

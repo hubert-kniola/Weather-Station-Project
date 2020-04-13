@@ -138,7 +138,6 @@ int main(void) {
 	LCD_Init();
 	THS_Init();
 	SD_Init();
-	HTTP_Init();
 	NET_Init();
 	MENU_Init();
 	/* USER CODE END 2 */

@@ -15,7 +15,7 @@ uint8_t NET_HTTPSetup(void);
 int NET_GetIndexForPattern(char[]);
 
 void NET_HandleUART_IT(void);
-void NET_SendData(char, char*);
-void NET_CloseConn(char);
+void NET_SendTCPData(char, char*);
+void NET_CloseConnSignal(char);
 
 #endif

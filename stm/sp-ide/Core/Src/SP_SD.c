@@ -26,7 +26,6 @@ FRESULT _res;
 FIL _fileH;
 SD_Time _dTime;
 
-BYTE _work[FF_MAX_SS];
 UINT _writtenB;
 UINT _readB;
 
@@ -52,7 +51,7 @@ uint32_t _SD_GetDiskSpace(void) {
 
 void _SD_FormatDisk(void) {
 	/* fat32 */
-	while (f_mkfs("", FM_FAT32, (DWORD) 0, _work, sizeof(_work)) != FR_OK)
+	while (f_mkfs("", FM_FAT32, (DWORD) 0, NULL, FF_MAX_SS) != FR_OK)
 		HAL_Delay(1);
 	_SD_GetDiskSpace();
 }
@@ -63,6 +62,7 @@ void SD_Init(void) {
 	}
 
 	SD_RefreshDateTime();
+	_SD_GetDiskSpace();
 }
 
 void _SD_ClearDateTimeRegisters(void) {

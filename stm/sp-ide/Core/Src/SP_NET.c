@@ -1,7 +1,6 @@
 #include <SP_NET.h>
 
 #include "SP_HTTP.h"
-
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,11 +25,11 @@
 #define RECEIVE_BUFFER_SIZE 	500
 #define READY_DATA_SIZE			100
 #define NETWORK_LIST_TIMEOUT 	4000
-#define REQUEST_RECEIVE_TIMEOUT	500
+#define REQUEST_RECEIVE_TIMEOUT	100
 #define BYTE_RECEIVE_TIMEOUT	30
 #define MAX_SSID_LEN			100
 #define IP_SIZE					15
-#define PACKET_SIZE				1024
+#define PACKET_SIZE				2048
 #define PACKET_INTERVAL			20
 
 #define CLIENT_IP_PATTERN 			"STAIP,\""
@@ -43,11 +42,6 @@ extern ModeEnum Mode;
 char _receive[RECEIVE_BUFFER_SIZE];
 char _currentIP[IP_SIZE];
 
-char _connID;
-
-uint8_t _uartByte;
-uint8_t _requestIndex = 0;
-
 void _NET_ResetBuffer(void) {
 	for (int i = 0; i < RECEIVE_BUFFER_SIZE; i++) {
 		_receive[i] = 0;
@@ -58,6 +52,11 @@ void _NET_ResetIP(void) {
 	for (int i = 0; i < IP_SIZE; i++) {
 		_currentIP[i] = 0;
 	}
+}
+
+void _NET_StartReceiveIT(void) {
+	_NET_ResetBuffer();
+	HAL_UART_Receive_IT(&huart3, (uint8_t*) &(_receive[0]), 1);
 }
 
 int NET_GetIndexForPattern(char pattern[]) {
@@ -108,10 +107,6 @@ void _NET_SetClientDConnMode(void) {
 
 void NET_Init(void) {
 	_NET_SetClientDConnMode();
-
-	_connID = 0;
-	_uartByte = 0;
-	_requestIndex = 0;
 }
 
 char* NET_RequestNetworkList(void) {
@@ -264,7 +259,7 @@ char* NET_GetConnInfo(void) {
 	}
 
 	/* wznow nasluchiwanie */
-	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
+	_NET_StartReceiveIT();
 	return (char*) _currentIP;
 }
 
@@ -281,55 +276,39 @@ uint8_t NET_HTTPSetup(void) {
 	while (_NET_SendCommand(SETUP_SERVER("1", "80"), 5, 100) != 0)
 		HAL_Delay(1);
 
-	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
 	/* gniazdo tcp juz nasluchuje na porcie 80 */
 	return 0;
 }
 
 void NET_HandleUART_IT(void) {
-	if (_uartByte == REQUEST_RECIEVED_PATTERN[_requestIndex++]) {
-		if (_requestIndex == strlen(REQUEST_RECIEVED_PATTERN)) {
-			/* odczyt id polaczenia */
-			HAL_UART_Receive(&huart3, (uint8_t*) &_connID, 1,
-			BYTE_RECEIVE_TIMEOUT);
-			/* odczyt ilosci danych do odebrania */
-			char lenString[5] = { 0 }, tempChar = 0;
-			int lenIndex = 0;
+	/* pobierz caly bufor */
+	HAL_UART_Receive(&huart3, (uint8_t*) _receive, RECEIVE_BUFFER_SIZE, REQUEST_RECEIVE_TIMEOUT);
 
-			while (tempChar != ':') {
-				HAL_UART_Receive(&huart3, (uint8_t*) &tempChar, 1,
-				BYTE_RECEIVE_TIMEOUT);
-				/* jebaniutki nie chce w nulla */
-				if (tempChar == ',')
-					continue;
-
-				lenString[lenIndex++] = tempChar;
+	int index = NET_GetIndexForPattern(REQUEST_RECIEVED_PATTERN);
+	if (index != -1) {
+		char connID = _receive[index++];
+		/* przesun zadanie o przeanalizowane znaki */
+		while (_receive[index++] != ':')
+			;
+		/* sformuluj zadanie http i podaj wyzej */
+		for (int i = 0; i < RECEIVE_BUFFER_SIZE; i++) {
+			if (index > RECEIVE_BUFFER_SIZE || _receive[index] == 0) {
+				_receive[i] = 0;
+			} else {
+				_receive[i] = _receive[index++];
 			}
-			/* bez dwukropka */
-			lenString[--lenIndex] = 0;
-
-			uint16_t requestLen = atoi(lenString);
-			requestLen = (requestLen > RECEIVE_BUFFER_SIZE) ?
-			RECEIVE_BUFFER_SIZE :
-																requestLen;
-			/* odbierz zadanie */
-			HAL_UART_Receive(&huart3, (uint8_t*) _receive, requestLen,
-			REQUEST_RECEIVE_TIMEOUT);
-
-			HTTP_HandleRequest((char*) _receive, _connID);
 		}
-	} else {
-		/* nieistotne dane */
-		_requestIndex = 0;
+
+		HTTP_HandleRequest((char*) _receive, connID);
 	}
 
-	HAL_UART_Receive_IT(&huart3, &_uartByte, 1);
+	_NET_StartReceiveIT();
 }
 
 #define __CMD_SIZE 20
 #define __resetCmd() for(int i=0;i<__CMD_SIZE;i++)cmd[i]=0
 
-void NET_SendData(char connID, char *data) {
+void NET_SendTCPData(char connID, char *data) {
 	char cmd[__CMD_SIZE ];
 	uint32_t len = strlen(data), index = 0;
 
@@ -348,13 +327,13 @@ void NET_SendData(char connID, char *data) {
 			HAL_UART_Transmit(&huart3, (uint8_t*) &(data[index++]), 1, 100);
 		}
 
-		HAL_Delay(6 * PACKET_INTERVAL);
+		HAL_Delay(5 * PACKET_INTERVAL);
 	}
 }
 
-void NET_CloseConn(char connID) {
+void NET_CloseConnSignal(char connID) {
 	char cmd[__CMD_SIZE] = {0};
 
-	sprintf(cmd, CLOSE_CONN("%c"), _connID);
+	sprintf(cmd, CLOSE_CONN("%c"), connID);
 	_NET_SendCommand(cmd, 5, 100);
 }

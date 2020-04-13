@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define GET_FILE_PATTERN 	"GET /"
+#define GET_FILE_PATTERN 	"GET "
 
-#define MAX_FILENAME_LEN	13
+#define MAX_REQUEST_LEN		20
 #define MAX_RESPONSE_LEN	400
 #define MAX_LINE_LEN		100
 
@@ -24,30 +24,32 @@
 
 char _response[MAX_RESPONSE_LEN];
 char _line[MAX_LINE_LEN];
+char _request[MAX_REQUEST_LEN];
 
-#define _resetResponse() for(int i=0;i<MAX_RESPONSE_LEN;i++)_response[i]=0
-#define _resetLine() for(int i=0;i<MAX_LINE_LEN;i++)_line[i]=0
+#define __resetResponse() for(int i=0;i<MAX_RESPONSE_LEN;i++)_response[i]=0
+#define __resetLine() for(int i=0;i<MAX_LINE_LEN;i++)_line[i]=0
+#define __resetRequest() for(int i=0;i<MAX_REQUEST_LEN;i++)_request[i]=0
 
-void HTTP_Init(void) {
-
-}
+#define CHECK_CONNECTION(a1,a2) arg=(NET_GetIndexForPattern(a2)!=-1)?false:true
+#define IF_GET(arg) if(strcmp(req,arg)==0)
+#define OR_GET(arg) else if(strcmp(req,arg)==0)
 
 char* _HTTP_ParseHeader(char *response, char *contentType, uint32_t length,
 		char *connection) {
-	_resetResponse();
-	_resetLine();
+	__resetResponse();
+	__resetLine();
 
 	sprintf(_line, "HTTP/1.1 %s\r\n", response);
 	strcpy(_response, _line);
-	_resetLine();
+	__resetLine();
 
 	sprintf(_line, "Content-Type: %s\r\n", contentType);
 	strcat(_response, _line);
-	_resetLine();
+	__resetLine();
 
 	sprintf(_line, "Content-Lenght: %ld\r\n", length);
 	strcat(_response, _line);
-	_resetLine();
+	__resetLine();
 
 	sprintf(_line, "Connection: %s\r\n\r\n", connection);
 	strcat(_response, _line);
@@ -55,34 +57,41 @@ char* _HTTP_ParseHeader(char *response, char *contentType, uint32_t length,
 	return (char*) _response;
 }
 
-void HTTP_HandleRequest(char *request, char connID) {
+char* _NET_GetRequest(char *request) {
 	int cursor = NET_GetIndexForPattern(GET_FILE_PATTERN);
 	int index = 0;
 
+	__resetRequest();
 	if (cursor != -1) {
-		while (request[cursor++] != ' ')
-			;
-	}
-
-	if (index == 0) {
-		uint32_t size = 0;
-		bool close = false;
-
-		char *data = SD_ReadFile("index.htm", &size);
-		char *header = _HTTP_ParseHeader(RSP_OK, CT_HTML, size, CN_KEEP);
-
-		if (NET_GetIndexForPattern(CN_KEEP) == -1) {
-			close = true;
+		while (request[cursor] != ' ') {
+			_request[index++] = request[cursor++];
 		}
+		return (char*) _request;
+	}
+	return NULL;
+}
 
-		NET_SendData(connID, header);
-		NET_SendData(connID, data);
+void HTTP_HandleRequest(char *request, char connID) {
+	char *req = _NET_GetRequest(request);
+	char *header;
+	char *file;
+	uint32_t size;
 
-		NET_CloseConn(connID);
+	IF_GET("/") {
+		file = SD_ReadFile("index.htm", &size);
+		header = _HTTP_ParseHeader(RSP_OK, CT_HTML, size, CN_CLOSE);
+
+		NET_SendTCPData(connID, header);
+		NET_SendTCPData(connID, file);
+
+		NET_CloseConnSignal(connID);
+	}
+	OR_GET("/#about") {
 
 	} else {
-		NET_SendData(connID,
-				_HTTP_ParseHeader(RSP_NOT_FOUND, CT_HTML, 0, CN_CLOSE));
-		NET_CloseConn(connID);
+		/* nieobslugiwane zadanie */
+		header = _HTTP_ParseHeader(RSP_NOT_FOUND, CT_HTML, 0, CN_CLOSE);
+		NET_SendTCPData(connID, header);
+		NET_CloseConnSignal(connID);
 	}
 }

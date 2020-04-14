@@ -8,6 +8,8 @@
   <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Weather Station</title>
 
+  <link rel="stylesheet" href="style.css" type="text/css"/>
+
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
@@ -22,19 +24,21 @@
 <body class="bg-secondary">
 
   <section id="top">
+    <div class="sector1">
     <nav class="navbar navbar-dark bg-dark flex-column">
-      <a class="h1 text-white">Weather Station</a>
-      <a class="nav-link h5" href="#data">data</a>
-      <a class="nav-link h5" href="#about">about</a>
-      <a class="nav-link h5" href="#authors">authors</a>
+      <a href="index.htm" class="tilelink"><font size="7">Weather Station</font></a>
+      <a href="data.htm" class="tilelink1" style = "font-family: Verdana" href="#data"><font size="4">Data</font></a>
+      <a href="about.htm"class="tilelink2" style = "font-family: Verdana" href="#about"><font size="4">About</font></a>
     </nav>
     </div>
+  </div>
   </section>
 
   <div class="my-5"></div>
 
   <section id="data">
     <div class="container-fluid">
+      <div class="sector3">
       <div class="jumbotron jumbotron-fluid">
         <div class="container">
           <h1 class="display-4 text-center">Current weather</h1>
@@ -42,6 +46,7 @@
           <div class="my-5"></div>
 
           <div class="container text-center">
+          <div class="sector2">
             <div class="row">
               <p id="data_tem" class="col-md-3 mb-3" style="display: none;">1</p>
               <p id="data_hum" class="col-md-3 mb-3" style="display: none;">2</p>
@@ -49,6 +54,7 @@
               <p id="data_tim" class="col-md-3 mb-3" style="display: none;">4</p>
             </div>
           </div>
+        </div>
           <div class="d-flex justify-content-center">
             <div id="spinner" class="spinner-grow" role="status">
               <span class="sr-only">Loading data...</span>
@@ -56,6 +62,7 @@
           </div>
         </div>
       </div>
+    </div>
     </div>
   </section>
 
@@ -84,53 +91,9 @@
 
   </script>
 
-  <div class="my-5"></div>
-
-  <section id="authors">
-    <h4 class="text-white text-center m-0">About</h4>
-    <hr class="my-4">
-    <p class="lead text-white text-center">The site is used to operate the home weather station.<br> You can check the
-      weather from anywhere in your home using your phone or computer.</p>
-  </section>
-
-  <div class="my-5"></div>
-
-  <section id="authors">
-    <h4 class="text-white text-center m-0">Authors</h4>
-    <hr class="my-4">
-
-    <div class="container">
-      <div class="row">
-
-        <div class="col-md-6 mb-3">
-          <div class="card bg-dark">
-            <div class="card-body text-center">
-              <h4 class="m-0 text-white">Bartosz Kosmala</h4>
-              <hr class="my-4">
-              <a class="text-secondary-50" href="https://github.com/bart-kosmala">@github</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6  mb-3">
-          <div class="card bg-dark">
-            <div class="card-body text-center">
-              <h4 class="m-0 text-white">Hubert Knioła</h4>
-              <hr class="my-4">
-              <a class="text-secondary-50" href="https://github.com/hubert-kniola">@github</a>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <div class="my-2"></div>
-
   <footer class="bg-black small text-center text-white-50">
     <div class="container">
-      2020 @ PUT
+      2020 &copy COPYRIGHT BY POZNAN UNIVERSITY OF TECHNOLOGY | All rights reserved
     </div>
   </footer>
 

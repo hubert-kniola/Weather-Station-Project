@@ -1,0 +1,61 @@
+a.tilelink
+{
+    text-decoration: none;
+    height: 80px;
+    color: #ffffff;
+}
+
+a.tilelink:hover
+{
+    text-decoration: none;
+    height: 80px;
+    color: #ffffff;
+}
+
+a.tilelink1:hover
+{
+    text-decoration: none;
+    height: 40px;
+    color: #ffffff;
+}
+
+a.tilelink1
+{
+    text-decoration: none;
+    height: 40px;
+    color: #ffffff;
+}
+
+a.tilelink2:hover
+{
+    text-decoration: none;
+    height: 50px;
+    color: #ffffff;
+}
+
+a.tilelink2
+{
+    text-decoration: none;
+    height: 50px;
+    color: #ffffff;
+}
+
+.square
+{
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    vertical-align: middle
+    text-al
+}
+
+.space
+{
+    height: 160px;
+    width:50px;
+}
+
+tr
+{
+    text-align: center
+}

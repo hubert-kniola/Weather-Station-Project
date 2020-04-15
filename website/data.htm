@@ -5,71 +5,94 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Weather Station</title>
 
-  <link rel="stylesheet" href="style.css" type="text/css"/>
-
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-
   <style>
-    html {
-      scroll-behavior: smooth;
+    a.tilelink {
+      text-decoration: none;
+      height: 80px;
+      color: #ffffff;
+    }
+
+    a.tilelink:hover {
+      text-decoration: none;
+      height: 80px;
+      color: #ffffff;
+    }
+
+    a.tilelink1 {
+      text-decoration: none;
+      height: 40px;
+      color: #ffffff;
+      font-family: Verdana;
+    }
+
+    a.tilelink1:hover {
+      text-decoration: none;
+      height: 40px;
+      color: #ffffff;
+    }
+
+    .square {
+      width: 50%;
+      margin-left: auto;
+      margin-right: auto;
+      vertical-align: middle text-al
+    }
+
+    tr {
+      text-align: center
     }
   </style>
 
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 </head>
 
 <body class="bg-secondary">
 
   <section id="top">
-    <div class="sector1">
     <nav class="navbar navbar-dark bg-dark flex-column">
-        <a href="index.htm" class="tilelink"><font size="7">Weather Station</font></a>
-        <a href="data.htm" class="tilelink1" style = "font-family: Verdana" href="#data"><font size="4">Data</font></a>
-        <a href="about.htm"class="tilelink2" style = "font-family: Verdana" href="#about"><font size="4">About</font></a>
+      <a href="home" class="tilelink">
+        <font size="7">Weather Station</font>
+      </a>
+      <a class="tilelink1 text-white">
+        <font size="4">Data</font>
+      </a>
+      <a href="about" class="tilelink1">
+        <font size="4">About</font>
+      </a>
     </nav>
-    </div>
-  </div>
   </section>
 
   <div class="my-5"></div>
 
   <div class="square">
-    <div class="tile5"><table cellspacing="0" cellpadding="0" border="1" style="width: 100%;">
-        <tbody>
-        <tr bgcolor="#3095d3"><th align="center">Pressure</th><th align="center">Temperature</th><th align="center">Humidity</th></tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
+    <table cellspacing="0" cellpadding="0" border="1" style="width: 100%;">
+      <tbody>
+        <tr bgcolor="#3095d3">
+          <th align="center">Date and Time</th>
+          <th align="center">Temperature</th>
+          <th align="center">Humidity</th>
         </tr>
         <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
+          <td align="center">...</td>
+          <td align="center">...</td>
+          <td align="center">...</td>
         </tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center"> ...</td>
-        </tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
-        </tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
-        </tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
-        </tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
-        </tr>
-        <tr>
-            <td align="center">...</td>	<td align="center">...</td>    <td align="center">...</td>
-        </tr>
-        </tbody>
-        </table>
-    </div>
-</div>
+      </tbody>
+    </table>
+  </div>
 
-    <div class="my-5"></div>
+  <div class="my-5"></div>
+
+  <div class="d-flex justify-content-center">
+    <div id="spinner" class="spinner-grow" role="status">
+      <span class="sr-only">Loading data...</span>
+    </div>
+  </div>
+
+  <div class="my-5"></div>
 
   <footer class="bg-black small text-center text-white-50">
     <div class="container">

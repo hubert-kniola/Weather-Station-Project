@@ -5,33 +5,53 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
   <title>Weather Station</title>
 
-  <link rel="stylesheet" href="style.css" type="text/css"/>
-
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-
   <style>
-    html {
-      scroll-behavior: smooth;
+    a.tilelink {
+      text-decoration: none;
+      height: 80px;
+      color: #ffffff;
+    }
+
+    a.tilelink:hover {
+      text-decoration: none;
+      height: 80px;
+      color: #ffffff;
+    }
+
+    a.tilelink1 {
+      text-decoration: none;
+      height: 40px;
+      color: #ffffff;
+      font-family: Verdana;
+    }
+
+    a.tilelink1:hover {
+      text-decoration: none;
+      height: 40px;
+      color: #ffffff;
     }
   </style>
 
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 </head>
 
 <body class="bg-secondary">
 
   <section id="top">
-    <div class="sector1">
     <nav class="navbar navbar-dark bg-dark flex-column">
-      <a href="index.htm" class="tilelink"><font size="7">Weather Station</font></a>
-      <a href="data.htm" class="tilelink1" style = "font-family: Verdana" href="#data"><font size="4">Data</font></a>
-      <a href="about.htm"class="tilelink2" style = "font-family: Verdana" href="#about"><font size="4">About</font></a>
+      <a class="tilelink text-white">
+        <font size="7">Weather Station</font>
+      </a>
+      <a href="data" class="tilelink1">
+        <font size="4">Data</font>
+      </a>
+      <a href="about" class="tilelink1">
+        <font size="4">About</font>
+      </a>
     </nav>
-    </div>
-  </div>
   </section>
 
   <div class="my-5"></div>
@@ -39,57 +59,30 @@
   <section id="data">
     <div class="container-fluid">
       <div class="sector3">
-      <div class="jumbotron jumbotron-fluid">
-        <div class="container">
-          <h1 class="display-4 text-center">Current weather</h1>
+        <div class="jumbotron jumbotron-fluid">
+          <div class="container">
+            <h1 class="display-4 text-center">Current weather</h1>
 
-          <div class="my-5"></div>
+            <div class="my-5"></div>
 
-          <div class="container text-center">
-          <div class="sector2">
-            <div class="row">
-              <p id="data_tem" class="col-md-3 mb-3" style="display: none;">1</p>
-              <p id="data_hum" class="col-md-3 mb-3" style="display: none;">2</p>
-              <p id="data_dat" class="col-md-3 mb-3" style="display: none;">3</p>
-              <p id="data_tim" class="col-md-3 mb-3" style="display: none;">4</p>
+            <div class="container text-center">
+              <div class="row">
+                <p id="data_tem" class="col-md-3 mb-3" style="display: none;">1</p>
+                <p id="data_hum" class="col-md-3 mb-3" style="display: none;">2</p>
+                <p id="data_dat" class="col-md-3 mb-3" style="display: none;">3</p>
+                <p id="data_tim" class="col-md-3 mb-3" style="display: none;">4</p>
+              </div>
             </div>
-          </div>
-        </div>
-          <div class="d-flex justify-content-center">
-            <div id="spinner" class="spinner-grow" role="status">
-              <span class="sr-only">Loading data...</span>
+            <div class="d-flex justify-content-center">
+              <div id="spinner" class="spinner-grow" role="status">
+                <span class="sr-only">Loading data...</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    </div>
   </section>
-
-  <script type="text/javascript">
-
-    setTimeout(() => {
-      var url = window.location.href + 'now';
-
-      fetch(url)
-        .then((res) => res.json())
-        .then(obj => {
-          document.getElementById('data_tem').innerHTML = "Temperature: " + obj.temp + ' C';
-          document.getElementById('data_hum').innerHTML = "Humidity: " + obj.hum + ' %';
-          document.getElementById('data_dat').innerHTML = "Measured on: " + obj.date;
-          document.getElementById('data_tim').innerHTML = "At: " + obj.time;
-
-          document.getElementById('spinner').style.display = 'none';
-
-          document.getElementById('data_tem').style.display = 'block';
-          document.getElementById('data_hum').style.display = 'block';
-          document.getElementById('data_dat').style.display = 'block';
-          document.getElementById('data_tim').style.display = 'block';
-        })
-        .catch(e => console.log(e));
-    }, 3000);
-
-  </script>
 
   <footer class="bg-black small text-center text-white-50">
     <div class="container">
@@ -98,7 +91,31 @@
   </footer>
 
   <div class="my-2"></div>
-
 </body>
+
+<script type="text/javascript">
+
+  setTimeout(() => {
+    var url = window.location.href + 'now';
+
+    fetch(url)
+      .then((res) => res.json())
+      .then(obj => {
+        document.getElementById('data_tem').innerHTML = "Temperature: " + obj.temp + ' C';
+        document.getElementById('data_hum').innerHTML = "Humidity: " + obj.hum + ' %';
+        document.getElementById('data_dat').innerHTML = "Measured on: " + obj.date;
+        document.getElementById('data_tim').innerHTML = "At: " + obj.time;
+
+        document.getElementById('spinner').style.display = 'none';
+
+        document.getElementById('data_tem').style.display = 'block';
+        document.getElementById('data_hum').style.display = 'block';
+        document.getElementById('data_dat').style.display = 'block';
+        document.getElementById('data_tim').style.display = 'block';
+      })
+      .catch(e => console.log(e));
+  }, 2000);
+
+</script>
 
 </html>

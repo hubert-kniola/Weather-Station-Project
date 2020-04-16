@@ -12,5 +12,9 @@ void SD_SetDateTime(uint8_t[], uint8_t[]);
 
 uint8_t SD_CreateJson(bool, float[], char[], char[]);
 char* SD_ReadFile(char*, uint32_t*);
+char* SD_GetLastJson(uint32_t*);
+char* SD_ListJsons(uint32_t*, uint32_t);
+uint32_t SD_GetNofJsons(void);
+char* SD_GetJsonFromEnd(uint32_t, uint32_t*);
 
 #endif

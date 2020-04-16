@@ -32,6 +32,8 @@
 #define PACKET_SIZE				2000
 #define PACKET_INTERVAL			20
 
+#define NETWORK_SEPARATOR '\\'
+
 #define CLIENT_IP_PATTERN 			"STAIP,\""
 #define OK_PATTERN 					"OK\r\n"
 #define REQUEST_RECIEVED_PATTERN 	"+IPD,"
@@ -64,6 +66,7 @@ void NET_AbortIT(void) {
 }
 
 int NET_GetIndexForPattern(char pattern[]) {
+	NET_AbortIT();
 	int find = 0;
 	int patternLen = strlen(pattern);
 
@@ -144,7 +147,7 @@ char* NET_RequestNetworkList(void) {
 					_receive[cursor++] = 1;
 				}
 
-				_receive[index++] = '-';
+				_receive[index++] = NETWORK_SEPARATOR;
 				_receive[cursor++] = 1;
 
 				/* informacja o zabezpieczeniach */
@@ -213,7 +216,7 @@ uint8_t NET_ConnectToWiFi(char *password, int network) {
 	cmdIndex += strlen(CONN_TO_NETWORK);
 
 	for (int i = 0;; i++) {
-		if (_receive[ssidIndex] == '-') {
+		if (_receive[ssidIndex] == NETWORK_SEPARATOR) {
 			break;
 		} else {
 			cmd[cmdIndex++] = _receive[ssidIndex++];
@@ -251,7 +254,7 @@ char* NET_GetConnInfo(void) {
 			}
 		}
 
-		if (strcmp("0.0.0.0", _receive) == 0) {
+		if (strcmp("0.0.0.0", _currentIP) == 0) {
 			Mode = MD_LostHost;
 			return NULL;
 		}
@@ -260,25 +263,27 @@ char* NET_GetConnInfo(void) {
 			NET_HTTPSetup();
 			Mode = MD_ClientConn;
 		}
+
+		/* wznow nasluchiwanie */
+		NET_StartIT();
+		return (char*) _currentIP;
 	}
 
-	/* wznow nasluchiwanie */
-	NET_StartIT();
-	return (char*) _currentIP;
+	return NULL;
 }
 
 uint8_t NET_WiFiDisconnect(void) {
 	while (_NET_SendCommand(DISCONNECT, 5, 100) != 0)
-		HAL_Delay(1);
+		HAL_Delay(10);
 	Mode = MD_ClientDConn;
 	return 0;
 }
 
 uint8_t NET_HTTPSetup(void) {
 	while (_NET_SendCommand(SET_MUX("1"), 5, 100) != 0)
-		HAL_Delay(1);
+		HAL_Delay(10);
 	while (_NET_SendCommand(SETUP_SERVER("1", "80"), 5, 100) != 0)
-		HAL_Delay(1);
+		HAL_Delay(10);
 
 	return 0;
 }

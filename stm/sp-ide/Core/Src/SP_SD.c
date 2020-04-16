@@ -1,16 +1,22 @@
 #include "SP_SD.h"
 
 #include "ff.h"
+#include "SP_LCD.h"
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 typedef struct {
 	uint8_t date[6];
 	uint8_t time[6];
 } SD_Time;
 
-#define MAX_FILESIZE 10000
+#define MAX_FILESIZE 		7000
+#define MAX_FILENAME_LEN 	13
+#define MAX_LS_LEN			1400+2
+
+#define MAX_FILENAME 99999999
 
 /* ----------------- Konfiguracja uzytkownika ------------------- */
 extern RTC_HandleTypeDef hrtc;
@@ -31,6 +37,10 @@ UINT _readB;
 
 BYTE _buffer[MAX_FILESIZE];
 
+uint32_t _lastJsonNum;
+char _jsonBuffer[MAX_FILENAME_LEN];
+char _lsDir[MAX_LS_LEN];
+
 void _SD_ResetBuffer(void) {
 	for (int i = 0; i < MAX_FILESIZE; i++) {
 		_buffer[i] = 0;
@@ -41,7 +51,8 @@ uint32_t _SD_GetDiskSpace(void) {
 	FATFS *ptr;
 	uint32_t fre_clust = 0;
 
-	if (f_getfree("", &fre_clust, &ptr) != FR_OK) {
+	_res = f_getfree("", &fre_clust, &ptr);
+	if (_res != FR_OK) {
 		return 0;
 	}
 
@@ -51,17 +62,76 @@ uint32_t _SD_GetDiskSpace(void) {
 
 void _SD_FormatDisk(void) {
 	/* fat32 */
-	while (f_mkfs("", FM_FAT32, (DWORD) 0, NULL, FF_MAX_SS) != FR_OK)
+	while ((_res = f_mkfs("", FM_FAT32, (DWORD) 0, NULL, FF_MAX_SS)) != FR_OK) {
 		HAL_Delay(1);
+	}
+
 	_SD_GetDiskSpace();
 }
 
+#define __resetJsonBuf() for(int i=0;i<MAX_FILENAME_LEN;i++)_jsonBuffer[i]=0
+
+void _SD_RestartNaming(void) {
+	_lastJsonNum = MAX_FILENAME;
+}
+
+char* _SD_GetNextFilename(void) {
+	if (_lastJsonNum == MAX_FILENAME) {
+		_lastJsonNum = 0;
+	} else {
+		_lastJsonNum++;
+	}
+
+	__resetJsonBuf();
+	sprintf(_jsonBuffer, "%08lu.jso", _lastJsonNum);
+
+	return (char*) _jsonBuffer;
+}
+
+void _SD_WriteLastFilename(void) {
+	FIL temp;
+
+	_res = f_unlink("sp.cfg");
+
+	if ((_res = f_open(&temp, "sp.cfg", FA_CREATE_ALWAYS | FA_WRITE))
+			!= FR_OK) {
+		return;
+	}
+
+	f_printf(&temp, "%lu", _lastJsonNum);
+
+	f_close(&temp);
+}
+
+void _SD_ReadLastFilename(void) {
+	FIL temp;
+
+	if (f_open(&temp, "sp.cfg", FA_READ) != FR_OK) {
+		_SD_RestartNaming();
+		return;
+	}
+
+	_SD_ResetBuffer();
+	uint32_t index = 0;
+
+	while (!f_eof(&temp)) {
+		_res = f_read(&temp, &_buffer[index++], 1, &_readB);
+	}
+
+	f_close(&temp);
+
+	_lastJsonNum = atoi((char*) _buffer);
+}
+
 void SD_Init(void) {
-	if (f_mount(&_ff, "", 1) == FR_NO_FILESYSTEM) {
-		//TODO Fatal
+	if ((_res = f_mount(&_ff, "", 1)) == FR_NO_FILESYSTEM) {
+		LCD_FatalSDScreen();
+		_SD_FormatDisk();
 	}
 
 	SD_RefreshDateTime();
+
+	_SD_ReadLastFilename();
 	_SD_GetDiskSpace();
 }
 
@@ -145,33 +215,136 @@ char* SD_ReadFile(char *filename, uint32_t *size) {
 /* Template structure
  *
  * {
+ * 		"id" : 99999999,
  * 		"inn" : 1,
  * 		"temp" : 24,
  * 		"hum" : 35,
- * 		"date"   : "03.30.20",
- * 		"time"	 : "12:03:30"
+ * 		"date" : "03.30.20",
+ * 		"time" : "12:03:30"
  * }
  */
+
 uint8_t SD_CreateJson(bool innTHS, float data[], char date[], char time[]) {
+	/* ignoruj boot log */
+	if ((int) data[0] == 0 && (int) data[1] == 0) {
+		return 1;
+	}
+
 	_SD_ResetBuffer();
 	/* oof */
 	uint32_t len =
 			sprintf((char*) _buffer,
-					"{\r\n\"inn\":%s,\r\n\"temp\":%.0f,\r\n\"hum\":%.0f,\r\n\"date\":\"%s\",\r\n\"time\":\"%s\"\r\n}",
+					"{\"id\":\"%08lu\",\"inn\":%s,\"temp\":%.0f,\"hum\":%.0f,\"date\":\"%s\",\"time\":\"%s\"}",
+					(_lastJsonNum + 1 > MAX_FILENAME) ? 0 : _lastJsonNum + 1,
 					innTHS ? "true" : "false", data[0], data[1], date, time);
-
+	/* /oof */
 	_SD_GetDiskSpace();
 
 	if (len > DISK_LEFT) {
-		return 1;
+		_SD_RestartNaming();
 	}
 
-	if (f_open(&_fileH, "wynik.jso", FA_OPEN_ALWAYS | FA_WRITE) != FR_OK) {
+	char *name = _SD_GetNextFilename();
+
+	_res = f_open(&_fileH, name, FA_CREATE_ALWAYS | FA_WRITE);
+	if (_res != FR_OK) {
 		return 2;
 	}
 
 	f_write(&_fileH, _buffer, len, &_writtenB);
 
 	f_close(&_fileH);
+
+	_SD_WriteLastFilename();
 	return 0;
+}
+
+#define __fileIs(arg) strcmp(fno.fname,arg)==0
+#define __resetDir() for(int i=0;i<MAX_LS_LEN;i++)_lsDir[i]=0
+
+char* SD_ListJsons(uint32_t *size, uint32_t offset) {
+	DIR dir;
+	static FILINFO fno;
+
+	__resetDir();
+	_lsDir[0] = ';';
+	uint32_t amount = 0;
+
+	_res = f_opendir(&dir, "");
+	if (_res == FR_OK) {
+		while (1) {
+			_res = f_readdir(&dir, &fno);
+			if (_res != FR_OK || fno.fname[0] == 0)
+				break;
+
+			if (__fileIs("SYSTEM~1") ||__fileIs("SP.CFG")
+			||__fileIs("ABOUT.HTM") || __fileIs("INDEX.HTM")
+			|| __fileIs("DATA.HTM") || __fileIs("ERROR.HTM")) {
+				/* ignoruj pliki systemowe */
+				continue;
+			}
+
+			/* przesuwamy bufor o okreslone pozycje */
+			while (offset != 0) {
+				offset--;
+				continue;
+			}
+			if (amount == 0) {
+				strcpy((char*) _lsDir, fno.fname);
+			} else {
+				strcat((char*) _lsDir, fno.fname);
+			}
+			strcat((char*) _lsDir, ";");
+			amount++;
+
+			if (amount > 100) {
+				/* i tak wiecej nie przetrzymamy w buforze */
+				break;
+			}
+		}
+	}
+
+	*size = amount;
+	return (char*) _lsDir;
+}
+
+uint32_t SD_GetNofJsons(void) {
+	DIR dir;
+	static FILINFO fno;
+
+	uint32_t amount = 0;
+
+	_res = f_opendir(&dir, "");
+	if (_res == FR_OK) {
+		while (1) {
+			_res = f_readdir(&dir, &fno);
+			if (_res != FR_OK || fno.fname[0] == 0)
+				break;
+
+			if (__fileIs("SYSTEM~1") ||__fileIs("SP.CFG")
+			||__fileIs("ABOUT.HTM") || __fileIs("INDEX.HTM")
+			|| __fileIs("DATA.HTM") || __fileIs("ERROR.HTM")) {
+				/* ignoruj pliki systemowe */
+				continue;
+			}
+
+			amount++;
+		}
+	}
+
+	return amount;
+}
+
+char* SD_GetLastJson(uint32_t *size) {
+	return SD_ReadFile(_jsonBuffer, size);
+}
+
+char* SD_GetJsonFromEnd(uint32_t offset, uint32_t *size) {
+	char filename[13] = { 0 };
+
+	int name = _lastJsonNum - offset;
+
+	sprintf(filename, "%08d.jso", (name > 0) ? name : MAX_FILENAME - name);
+
+	return SD_ReadFile(filename, size);
 }

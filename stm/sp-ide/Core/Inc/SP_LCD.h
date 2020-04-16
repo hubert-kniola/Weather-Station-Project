@@ -15,16 +15,14 @@ void LCD_WakeScreen(void);
 
 void LCD_NextLine(const char[]);
 void LCD_Print(const char[]);
-void LCD_Printf(const char[], ...);
-void LCD_PrintfDelayed(uint16_t, const char[], ...);
 void LCD_PrintCentered(const char[]);
-void LCD_PrintDegree(void);
 void LCD_PrintTempInfo(float*, float*);
 void LCD_PrintDateTime(const char[], const char[]);
 void LCD_WriteChar(char);
 void LCD_PrintNetworks(char*, int);
 void LCD_PrintOptionsScreen(const char[], int);
 void LCD_PrintNetworkStatus(ModeEnum, char*);
+void LCD_FatalSDScreen(void);
 
 void LCD_DisableBlink(void);
 void LCD_EnableBlink(void);

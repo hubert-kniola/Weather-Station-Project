@@ -174,7 +174,12 @@ void LCD_Init(void) {
 	_currentRow = 0;
 	_currentCol = 0;
 
-	LCD_PrintCentered("booting...");
+	/* welcome screen */
+	LCD_PrintCentered("Weather  Station");
+	LCD_SetCursor(0, 2);
+	LCD_PrintCentered("v1.0");
+	LCD_SetCursor(0, 3);
+	LCD_PrintCentered("2020 @ PUT");
 
 	uint8_t char7[8] = { 0b11000, 0b11000, 0b00110, 0b01001, 0b01000, 0b01000,
 			0b01001, 0b00110 };
@@ -295,39 +300,6 @@ void LCD_Print(const char str[]) {
 
 	for (int i = 0; i < size; i++) {
 		_LCD_SendData(buffer[i], true);
-	}
-}
-
-void LCD_Printf(const char format[], ...) {
-	va_list va;
-	va_start(va, format);
-
-	char str[80];
-	const int size = vsnprintf(str, (uint8_t) -1, format, va);
-
-	va_end(va);
-
-	if (size > 80)
-		return;
-
-	LCD_Print(str);
-}
-
-void LCD_PrintfDelayed(uint16_t delay, const char format[], ...) {
-	va_list va;
-	va_start(va, format);
-
-	char str[80];
-	const int size = vsnprintf(str, (uint8_t) -1, format, va);
-
-	va_end(va);
-
-	if (size > 80)
-		return;
-
-	for (int i = 0; i < size; i++) {
-		_LCD_SendData(((const uint8_t*) str)[i], true);
-		HAL_Delay(delay);
 	}
 }
 
@@ -537,7 +509,8 @@ void LCD_PrintNetworkStatus(ModeEnum mode, char *data) {
 	if (mode == MD_ClientDConn) {
 		LCD_PrintCentered("No WiFi Connection");
 	} else if (mode == MD_ClientConn) {
-		if (data == NULL) return;
+		if (data == NULL)
+			return;
 
 		int size = strlen(data);
 		_currentCol = (int) ((COLUMNS - size) / 2);
@@ -552,4 +525,18 @@ void LCD_PrintNetworkStatus(ModeEnum mode, char *data) {
 	} else if (mode == MD_LostHost) {
 		LCD_PrintCentered("Network unavailable!");
 	}
+}
+
+void LCD_FatalSDScreen(void) {
+	LCD_ClearScreen();
+
+	LCD_PrintCentered("Fatal error, sd card");
+	LCD_NextLine("");
+	LCD_PrintCentered("must be formated");
+	LCD_NextLine("");
+	LCD_PrintCentered("Copy HTTP files manu");
+	LCD_NextLine("");
+	LCD_PrintCentered("ally to fix device");
+
+	HAL_Delay(1000);
 }

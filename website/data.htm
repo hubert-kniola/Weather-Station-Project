@@ -34,7 +34,7 @@
     }
 
     .square {
-      width: 50%;
+      width: 70%;
       margin-left: auto;
       margin-right: auto;
       vertical-align: middle text-al
@@ -42,6 +42,10 @@
 
     tr {
       text-align: center
+    }
+
+    .bg-secondary {
+      background-color: darkgray;
     }
   </style>
 
@@ -67,18 +71,39 @@
 
   <div class="my-5"></div>
 
+  <section>
+    <h4 id="error" class="text-white text-center m-0">Weather data available on the device</h4>
+    <hr class="my-4">
+    <div id="phase1">
+      <p id="info" class="lead text-white text-center"></p>
+      <div class="my-2"></div>
+      <form>
+        <div class="container-fluid col-md-4">
+          <div id="amount" class="form-group text-center text-white" style="display: none;">
+            <label for="offset_setter">Choose offset</label>
+            <select class="form-control" id="offset_setter">
+              <!-- options -->
+            </select>
+            <div class="my-3"></div>
+            <button type="button" onclick="getData()" class="btn btn-light">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <div class="my-5"></div>
+
   <div class="square">
-    <table cellspacing="0" cellpadding="0" border="1" style="width: 100%;">
-      <tbody>
+    <table id="table" cellspacing="0" border="1" style="width: 100%;display: none;">
+      <tbody id="fetched_data">
         <tr bgcolor="#3095d3">
-          <th align="center">Date and Time</th>
-          <th align="center">Temperature</th>
-          <th align="center">Humidity</th>
-        </tr>
-        <tr>
-          <td align="center">...</td>
-          <td align="center">...</td>
-          <td align="center">...</td>
+          <th width="17%" align="center">Record ID</th>
+          <th width="16%" align="center">Inner Sensor?</th>
+          <th width="16%" align="center">Temperature [C]</th>
+          <th width="16%" align="center">Humidity [%]</th>
+          <th width="16%" align="center">Date</th>
+          <th width="16%" align="center">Time</th>
         </tr>
       </tbody>
     </table>
@@ -103,5 +128,82 @@
   <div class="my-2"></div>
 
 </body>
+
+<script type="text/javascript">
+
+  var parent = document.getElementById('fetched_data');
+  var url = window.location.href;
+  const N = 20;
+
+  var url = 'http://192.168.0.106/'
+
+  setTimeout(() => {
+    fetch(url + 'all')
+      .then(res => res.json())
+      .then(obj => {
+        if (obj.amount > N) {
+          document.getElementById('info').innerHTML = 'The device has <b>' + obj.amount + '</b> logs, but only ' + N + ' can be fetched at a time.<br>Please specify the offset (0 means latest ' + N + ' logs).';
+          document.getElementById('amount').style.display = 'block';
+
+          var parent = document.getElementById('offset_setter');
+          for (var i = 0; i < obj.amount / N; i++) {
+            var elem = document.createElement('option');
+            elem.innerText = i * N;
+            parent.appendChild(elem);
+          }
+        }
+      })
+      .catch(e => console.log(e));
+
+    setTimeout(() => {
+      document.getElementById('spinner').style.display = 'none';
+    }, 1400);
+
+  }, 2000);
+
+  function getData() {
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('phase1').style.display = 'none';
+
+    var choice = document.getElementById('offset_setter');
+    var offset = parseInt(choice.options[choice.selectedIndex].text);
+
+    for (var i = 0; i < 1; i++) {
+      console.log(i);
+
+      setTimeout(() => {
+        fetch(url + 'all/elem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain'
+          },
+          body: '{"offset":' + offset + ',"index":' + i + '}'
+        })
+          .then(res => res.json())
+          .then(obj => {
+            var row = document.createElement('tr');
+            parent.appendChild(row);
+
+            Object.keys(obj).forEach(key => {
+              var data = document.createElement('td');
+              data.setAttribute('align', 'center');
+              data.setAttribute('class', 'text-white ')
+              data.textContent = obj[key];
+              row.appendChild(data);
+            });
+
+          }).catch(e => {
+            document.getElementById('error').innerHTML = 'Device is <i>busy</i> right now.<br>Please try again in a minute.'
+          });
+
+        setTimeout(() => {
+          document.getElementById('spinner').style.display = 'none';
+          document.getElementById('table').style.display = 'block';
+        }, 1200);
+
+      }, i * 1000);
+    }
+  }
+</script>
 
 </html>

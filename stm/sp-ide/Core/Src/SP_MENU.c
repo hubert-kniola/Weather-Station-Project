@@ -241,8 +241,8 @@ void _CLK_ParseAndSetDateTime(void) {
 			error = true;
 		}
 	}
-	if (Month(0,4)||Month(0,4)||Month(0,4)||
-		Month(0,4)) {
+	if (Month(0,4)||Month(0,6)||Month(0,9)||
+		Month(1,1)) {
 		/* miesiac 30 dniowy */
 		if (date[0] == 3 && date[1] != 0) {
 			error = true;
@@ -364,7 +364,7 @@ void _WiFi_RequestConn(void) {
 	LCD_SetCursor(0, 1);
 	LCD_PrintCentered("Connecting");
 	LCD_SetCursor(0, 3);
-	LCD_PrintCentered("please wait xD");
+	LCD_PrintCentered("please wait");
 
 	uint8_t result = NET_ConnectToWiFi((char*)WiFiPassword, _currentOption);
 	LCD_ClearScreen();
@@ -393,7 +393,7 @@ void MENU_OptionsWifiList(void) {
 		LCD_SetCursor(0, 2);
 		LCD_PrintCentered("searching...");
 		LCD_SetCursor(0, 3);
-		LCD_PrintCentered("please wait :)");
+		LCD_PrintCentered("please wait");
 
 		_optionsRow = 0;
 

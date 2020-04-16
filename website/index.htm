@@ -32,6 +32,10 @@
       height: 40px;
       color: #ffffff;
     }
+
+    .bg-secondary {
+      background-color: darkgray;
+    }
   </style>
 
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
@@ -39,7 +43,6 @@
 </head>
 
 <body class="bg-secondary">
-
   <section id="top">
     <nav class="navbar navbar-dark bg-dark flex-column">
       <a class="tilelink text-white">
@@ -66,21 +69,21 @@
             <div class="my-5"></div>
 
             <div class="container text-center">
-              <div class="row">
-                <p id="data_tem" class="col-md-3 mb-3" style="display: none;">1</p>
-                <p id="data_hum" class="col-md-3 mb-3" style="display: none;">2</p>
-                <p id="data_dat" class="col-md-3 mb-3" style="display: none;">3</p>
-                <p id="data_tim" class="col-md-3 mb-3" style="display: none;">4</p>
-              </div>
-            </div>
-            <div class="d-flex justify-content-center">
-              <div id="spinner" class="spinner-grow" role="status">
-                <span class="sr-only">Loading data...</span>
+              <div style="display: block; min-height: 70px; max-height: 70px;">
+                <div id="fetched_data" class="row">
+                  <!-- js generated data -->
+                </div>
+                <div class="d-flex justify-content-center">
+                  <div id="spinner" class="spinner-grow" role="status">
+                    <span class="sr-only">Loading data...</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
     </div>
   </section>
 
@@ -91,30 +94,65 @@
   </footer>
 
   <div class="my-2"></div>
+
+  <div id="test"></div>
 </body>
 
 <script type="text/javascript">
+  var url = window.location.href;
+  var url = 'http://192.168.0.106/'
 
   setTimeout(() => {
-    var url = window.location.href + 'now';
-
-    fetch(url)
-      .then((res) => res.json())
+    fetch(url + 'now')
+      .then(res => res.json())
       .then(obj => {
-        document.getElementById('data_tem').innerHTML = "Temperature: " + obj.temp + ' C';
-        document.getElementById('data_hum').innerHTML = "Humidity: " + obj.hum + ' %';
-        document.getElementById('data_dat').innerHTML = "Measured on: " + obj.date;
-        document.getElementById('data_tim').innerHTML = "At: " + obj.time;
+        var parent = document.getElementById('fetched_data');
 
-        document.getElementById('spinner').style.display = 'none';
+        var temp = document.createElement('p');
+        temp.setAttribute('class', 'col-md-6 mb-3');
+        temp.textContent = 'Temperature: ' + obj['temp'] + 'C';
+        parent.appendChild(temp);
 
-        document.getElementById('data_tem').style.display = 'block';
-        document.getElementById('data_hum').style.display = 'block';
-        document.getElementById('data_dat').style.display = 'block';
-        document.getElementById('data_tim').style.display = 'block';
+        var hum = document.createElement('p');
+        hum.setAttribute('class', 'col-md-6 mb-3');
+        hum.textContent = 'Air humidity: ' + obj['hum'] + '%';
+        parent.appendChild(hum);
       })
       .catch(e => console.log(e));
-  }, 2000);
+
+    setTimeout(() => {
+      document.getElementById('spinner').style.display = 'none';
+    }, 1400);
+    var date = new Date();
+
+    var day = date.getDate().toString().padStart(2, '0');
+    var month = date.getDay().toString().padStart(2, '0');
+    var year = date.getFullYear().toString().substring(2);
+
+    var hour = date.getHours().toString().padStart(2, '0');
+    var minute = date.getMinutes().toString().padStart(2, '0');
+    var second = date.getSeconds().toString().padStart(2, '0');
+
+    var postObj = new Object();
+    postObj.id = "dt_update";
+    postObj.date = day.split("").concat(month.split(""), year.split(""));
+    postObj.time = hour.split("").concat(minute.split(""), second.split(""));
+
+    for (var i = 0; i < postObj.date.length; i++) {
+      postObj.date[i] = parseInt(postObj.date[i]);
+      postObj.time[i] = parseInt(postObj.time[i]);
+    }
+
+    setTimeout(() => {
+      fetch(url + 'dt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain'
+        },
+        body: JSON.stringify(postObj)
+      }).catch(e => console.log(e));
+    }, 3000);
+  }, 1000);
 
 </script>
 

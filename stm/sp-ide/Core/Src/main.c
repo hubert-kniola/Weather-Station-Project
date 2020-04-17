@@ -64,8 +64,8 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 
-StateEnum State;
-ModeEnum Mode;
+StateEnum M_State;
+ModeEnum M_Mode;
 
 /* USER CODE END PV */
 
@@ -84,9 +84,6 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-uint8_t _led = 0;
-bool Update = true;
 
 /* USER CODE END 0 */
 
@@ -148,14 +145,11 @@ int main(void) {
 	LCD_ClearScreen();
 
 	while (1) {
-		if (Update && State == ST_Clock) {
+		if (M_State == ST_Clock) {
 			MENU_Clock();
-			Update = false;
 		}
 
-		if (MENU_HandleKeys()) {
-			Update = true;
-		}
+		MENU_HandleInput();
 
 		/* USER CODE END WHILE */
 
@@ -389,9 +383,9 @@ static void MX_TIM3_Init(void) {
 
 	/* USER CODE END TIM3_Init 1 */
 	htim3.Instance = TIM3;
-	htim3.Init.Prescaler = 36000 - 1;
+	htim3.Init.Prescaler = 7200 - 1;
 	htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim3.Init.Period = 60000 - 1;
+	htim3.Init.Period = 10000 - 1;
 	htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim3) != HAL_OK) {
@@ -539,12 +533,6 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-	/*Configure GPIO pin : STM_UserButton_Pin */
-	GPIO_InitStruct.Pin = STM_UserButton_Pin;
-	GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-	HAL_GPIO_Init(STM_UserButton_GPIO_Port, &GPIO_InitStruct);
-
 	/*Configure GPIO pin : MENU_Btn1_Pin */
 	GPIO_InitStruct.Pin = MENU_Btn1_Pin;
 	GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -565,32 +553,16 @@ static void MX_GPIO_Init(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-	/* EXTI interrupt init*/
-	HAL_NVIC_SetPriority(EXTI0_IRQn, 1, 0);
-	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-
 }
 
 /* USER CODE BEGIN 4 */
 /* SP Callback Definitions */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance == TIM2) {
-		RGB_SetMode(_led);
+		RGB_Update();
 		THS_ErrorClock();
-	} else if (htim->Instance == TIM3 && State == ST_Clock) {
-		LCD_BackgroundOff();
-		Update = true;
-	}
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (GPIO_Pin == GPIO_PIN_0) {
-		if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) /* Handle user button event */
-		{
-			if (++_led > 9) {
-				_led = 0;
-			}
-		}
+	} else if (htim->Instance == TIM3 && M_State == ST_Clock) {
+		MENU_IncTick();
 	}
 }
 

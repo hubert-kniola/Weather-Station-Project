@@ -13,6 +13,7 @@ SP_SD.c:182:6:SD_SetDateTime	16	static
 SP_SD.c:197:7:SD_ReadFile	24	static
 SP_SD.c:227:9:SD_CreateJson	80	static
 SP_SD.c:265:7:SD_ListJsons	72	static
-SP_SD.c:311:10:SD_GetNofJsons	56	static
-SP_SD.c:338:7:SD_GetLastJson	16	static
-SP_SD.c:342:7:SD_GetJsonFromEnd	40	static
+SP_SD.c:310:10:SD_GetNofJsons	56	static
+SP_SD.c:337:7:SD_GetLastJson	16	static
+SP_SD.c:341:7:SD_GetJsonFromEnd	40	static
+SP_SD.c:351:6:SD_RemoveAllJsons	40	static

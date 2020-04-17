@@ -3,7 +3,7 @@
 
 #include "main.h"
 
-
+#include <stdbool.h>
 
 void MENU_Init(void);
 
@@ -12,7 +12,8 @@ void MENU_Options(void);
 void MENU_OptionsSetDateTime(void);
 void MENU_OptionsWifiList(void);
 void MENU_PasswdInput(void);
+void MENU_IncTick(void);
 
-uint8_t MENU_HandleKeys(void);
+uint8_t MENU_HandleInput(void);
 
 #endif

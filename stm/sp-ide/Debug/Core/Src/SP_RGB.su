@@ -10,4 +10,4 @@ SP_RGB.c:138:6:_RGB_BlinkRed	8	static
 SP_RGB.c:157:6:_RGB_BlinkGreen	8	static
 SP_RGB.c:176:6:_RGB_BlinkBlue	8	static
 SP_RGB.c:195:6:_RGB_BlinkWhite	8	static
-SP_RGB.c:217:6:RGB_SetMode	16	static
+SP_RGB.c:217:6:RGB_Update	8	static

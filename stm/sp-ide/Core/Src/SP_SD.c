@@ -262,12 +262,11 @@ uint8_t SD_CreateJson(bool innTHS, float data[], char date[], char time[]) {
 #define __fileIs(arg) strcmp(fno.fname,arg)==0
 #define __resetDir() for(int i=0;i<MAX_LS_LEN;i++)_lsDir[i]=0
 
-char* SD_ListJsons(uint32_t *size, uint32_t offset) {
+char* SD_ListJsons(uint8_t *size, uint32_t offset) {
 	DIR dir;
 	static FILINFO fno;
 
 	__resetDir();
-	_lsDir[0] = ';';
 	uint32_t amount = 0;
 
 	_res = f_opendir(&dir, "");
@@ -347,4 +346,29 @@ char* SD_GetJsonFromEnd(uint32_t offset, uint32_t *size) {
 	sprintf(filename, "%08d.jso", (name > 0) ? name : MAX_FILENAME - name);
 
 	return SD_ReadFile(filename, size);
+}
+
+void SD_RemoveAllJsons(void) {
+	uint8_t listSize;
+	char *list = SD_ListJsons(&listSize, 0);
+
+	while (listSize != 0) {
+		int index = 0;
+
+		while (list[index] != 0) {
+			char filename[13] = { 0 };
+			int i = 0;
+
+			while (list[index] != ';') {
+				filename[i++] = list[index++];
+			}
+
+			_res = f_unlink(filename);
+			index++;
+		}
+
+		list = SD_ListJsons(&listSize, 0);
+	}
+
+	_SD_RestartNaming();
 }

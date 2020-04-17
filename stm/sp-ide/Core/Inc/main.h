@@ -76,9 +76,6 @@ void Error_Handler(void);
 #define THS_Sensor1_GPIO_Port GPIOC
 #define THS_Sensor2_Pin GPIO_PIN_1
 #define THS_Sensor2_GPIO_Port GPIOC
-#define STM_UserButton_Pin GPIO_PIN_0
-#define STM_UserButton_GPIO_Port GPIOA
-#define STM_UserButton_EXTI_IRQn EXTI0_IRQn
 #define RGB_Green_Pin GPIO_PIN_1
 #define RGB_Green_GPIO_Port GPIOA
 #define RGB_Blue_Pin GPIO_PIN_2

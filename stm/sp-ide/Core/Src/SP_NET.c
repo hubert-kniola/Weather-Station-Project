@@ -39,7 +39,7 @@
 #define REQUEST_RECIEVED_PATTERN 	"+IPD,"
 
 extern UART_HandleTypeDef huart3;
-extern ModeEnum Mode;
+extern ModeEnum M_Mode;
 
 char _receive[RECEIVE_BUFFER_SIZE];
 char _currentIP[IP_SIZE];
@@ -228,17 +228,24 @@ uint8_t NET_ConnectToWiFi(char *password, int network) {
 	strcat(cmd, "\"");
 
 	if (_NET_SendCommand(cmd, 10, NETWORK_LIST_TIMEOUT) == 0) {
-		Mode = MD_ClientConn;
+		M_Mode = MD_ClientConn;
 		NET_HTTPSetup();
 
 		return 0;
 	}
-	Mode = MD_LostHost;
+	M_Mode = MD_LostHost;
 	return 1;
 }
 
+char* NET_GetCurrentConnStatus(void) {
+	if (M_Mode == MD_ClientConn || M_Mode == MD_LostHost) {
+		return (char*) _currentIP;
+	}
+	return NULL;
+}
+
 char* NET_GetConnInfo(void) {
-	if ((Mode == MD_ClientConn || Mode == MD_LostHost)
+	if ((M_Mode == MD_ClientConn || M_Mode == MD_LostHost)
 			&& _NET_SendCommand(SHOW_IP, 5, 100) == 0) {
 		int cursor = NET_GetIndexForPattern(CLIENT_IP_PATTERN);
 		int index = 0;
@@ -249,19 +256,19 @@ char* NET_GetConnInfo(void) {
 			_currentIP[index++] = _receive[cursor++];
 
 			if (index - 1 > 15) {
-				Mode = MD_LostHost;
+				M_Mode = MD_LostHost;
 				return NULL; /* to nie jest adres ip */
 			}
 		}
 
 		if (strcmp("0.0.0.0", _currentIP) == 0) {
-			Mode = MD_LostHost;
+			M_Mode = MD_LostHost;
 			return NULL;
 		}
 		/* jesli uda sie nawiazac polaczenie pozniej, ustaw serwer */
-		if (Mode == MD_LostHost) {
+		if (M_Mode == MD_LostHost) {
 			NET_HTTPSetup();
-			Mode = MD_ClientConn;
+			M_Mode = MD_ClientConn;
 		}
 
 		/* wznow nasluchiwanie */
@@ -275,7 +282,7 @@ char* NET_GetConnInfo(void) {
 uint8_t NET_WiFiDisconnect(void) {
 	while (_NET_SendCommand(DISCONNECT, 5, 100) != 0)
 		HAL_Delay(10);
-	Mode = MD_ClientDConn;
+	M_Mode = MD_ClientDConn;
 	return 0;
 }
 
@@ -290,7 +297,8 @@ uint8_t NET_HTTPSetup(void) {
 
 void NET_HandleUART_IT(void) {
 	/* pobierz caly bufor */
-	HAL_UART_Receive(&huart3, (uint8_t*) _receive, RECEIVE_BUFFER_SIZE, REQUEST_RECEIVE_TIMEOUT);
+	HAL_UART_Receive(&huart3, (uint8_t*) _receive, RECEIVE_BUFFER_SIZE,
+	REQUEST_RECEIVE_TIMEOUT);
 
 	int index = NET_GetIndexForPattern(REQUEST_RECIEVED_PATTERN);
 	if (index != -1) {

@@ -4,7 +4,9 @@
 #include "SP_THS.h"
 #include "SP_SD.h"
 #include "SP_NET.h"
+#include "SP_RGB.h"
 
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define BTN_PRESSED_TIME	10
@@ -26,8 +28,9 @@
 #define LEFT 	GPIO_PIN_9
 #define RIGHT 	GPIO_PIN_10
 
-extern StateEnum State;
-extern ModeEnum Mode;
+extern StateEnum M_State;
+extern ModeEnum M_Mode;
+extern RGB_Mode R_Mode;
 /* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 /* Makra dla przyciskow */
@@ -42,26 +45,66 @@ extern ModeEnum Mode;
 #define SetBetween(min, max) if(_optionsChar>= max){_optionsChar = min;}else if(_optionsChar<min){_optionsChar=min;}else _optionsChar++;
 #define Month(a1, a2) (date[2]==a1&&date[3]==a2)
 
+/* kazda opcja musi sie konczyc srednikiem
+ * oraz musi maks 20 znakow,
+ * dodatkowo update NOF_OPTIONS i O_* */
+#define OPTIONS_STRING "1: Force update;2: Connect to WiFi;3: WiFi Disconnect;4: Set time and date;5: Clear SD data;6: Shutdown device;"
+#define NOF_OPTIONS	 6
+
+#define O_FORCE_U	1
+#define O_CONN_W	2
+#define O_DISCONN	3
+#define O_SET_DT	4
+#define O_CLEAR_SD	5
+#define O_SHUTDOWN	6
+
+#define MINUTE 60
+#define UPDATE_INTERVAL 10
+
 char WiFiPassword[MAX_PASSWD_LEN];
+uint8_t _PWD_index;
+
 uint8_t UserDateTime[DT_LEN];
 
 char _optionsChar;
-uint8_t _PWD_index;
-
 uint8_t _optionsRow;
 uint8_t _optionsCol;
-/* kazda opcja musi sie konczyc srednikiem
- * oraz musi maks 20 znakow,
- * dodatkowo update NOF_OPTIONS */
-char _optionsString[] = "1: Connect to WiFi;2: WiFi Disconnect;3: Toggle camp mode;4: Set time and date;5: Temp;";
-#define NOF_OPTIONS	 5
+
+uint16_t _menuTick;
+
+bool _updateClock;
+bool _updateWeather;
+
+bool _userReaction;
 
 uint8_t _networksIn;
 uint8_t _currentOption;
-char* _networksList;
+char *_networksList;
+
+/* zmienne glownego loopa */
+char _date[9], _time[9];
+float *_dataIn, *_dataOut;
 
 void MENU_Init(void) {
-	State = ST_Clock;
+	M_State = ST_Clock;
+
+	_menuTick = 0;
+	_updateClock = true;
+	_updateWeather = true;
+	_userReaction = false;
+
+	_dataIn = (float*) malloc(2 * sizeof(float));
+	_dataOut = (float*) malloc(2 * sizeof(float));
+
+	for (int i = 0; i < 2; i++) {
+		_dataIn[i] = 0.f;
+		_dataOut[i] = 0.f;
+	}
+
+	THS_ReadData(THS_In, _dataIn);
+	HAL_Delay(1000);
+
+	R_Mode = RGB_Disabled;
 }
 
 void _PWD_ResetPasswd(void) {
@@ -74,7 +117,8 @@ void _PWD_ResetPasswd(void) {
 }
 
 char _PWD_NextChar(void) {
-	if (++_optionsChar > MAX_PWD_CHAR) _optionsChar = MIN_PWD_CHAR;
+	if (++_optionsChar > MAX_PWD_CHAR)
+		_optionsChar = MIN_PWD_CHAR;
 	return _optionsChar;
 }
 
@@ -85,47 +129,47 @@ void _PWD_SaveAndWrite(char c) {
 
 void _CLK_HandleDateTimeInput(void) {
 	switch (_optionsCol) {
-		ColIs(1)
+	ColIs(1)
 			SetBetween('0', '3');
-		ColEnd
-		ColIs(2)
+			ColEnd
+	ColIs(2)
 			SetBetween('0', '9');
-		ColEnd
+			ColEnd
 
-		ColIs(4)
+	ColIs(4)
 			SetBetween('0', '1');
-		ColEnd
-		ColIs(5)
+			ColEnd
+	ColIs(5)
 			SetBetween('0', '9');
-		ColEnd
+			ColEnd
 
-		ColIs(7)
+	ColIs(7)
 			SetBetween('2', '9');
-		ColEnd
-		ColIs(8)
+			ColEnd
+	ColIs(8)
 			SetBetween('0', '9');
-		ColEnd
+			ColEnd
 
-		ColIs(11)
+	ColIs(11)
 			SetBetween('0', '2');
-		ColEnd
-		ColIs(12)
+			ColEnd
+	ColIs(12)
 			SetBetween('0', '9');
-		ColEnd
+			ColEnd
 
-		ColIs(14)
+	ColIs(14)
 			SetBetween('0', '5');
-		ColEnd
-		ColIs(15)
+			ColEnd
+	ColIs(15)
 			SetBetween('0', '9');
-		ColEnd
+			ColEnd
 
-		ColIs(17)
+	ColIs(17)
 			SetBetween('0', '5');
-		ColEnd
-		ColIs(18)
+			ColEnd
+	ColIs(18)
 			SetBetween('0', '9');
-		ColEnd
+			ColEnd
 	}
 
 	LCD_WriteChar(_optionsChar);
@@ -134,71 +178,71 @@ void _CLK_HandleDateTimeInput(void) {
 
 void _CLK_MoveInputRight(void) {
 	switch (_optionsCol) {
-		ColIs(18)
-		ColEnd
+	ColIs(18)
+			ColEnd
 
-		ColIs(15)
+	ColIs(15)
 			LCD_SetCursor(17, 1);
 			_optionsCol = 17;
-		ColEnd
+			ColEnd
 
-		ColIs(12)
+	ColIs(12)
 			LCD_SetCursor(14, 1);
 			_optionsCol = 14;
-		ColEnd
+			ColEnd
 
-		ColIs(8)
+	ColIs(8)
 			LCD_SetCursor(11, 1);
 			_optionsCol = 11;
-		ColEnd
+			ColEnd
 
-		ColIs(5)
+	ColIs(5)
 			LCD_SetCursor(7, 1);
 			_optionsCol = 7;
-		ColEnd
+			ColEnd
 
-		ColIs(2)
+	ColIs(2)
 			LCD_SetCursor(4, 1);
 			_optionsCol = 4;
-		ColEnd
+			ColEnd
 
-		default:
-			_optionsCol = LCD_CursorRight();
+	default:
+		_optionsCol = LCD_CursorRight();
 	}
 }
 
 void _CLK_MoveInputLeft(void) {
 	switch (_optionsCol) {
-		ColIs(1)
-		ColEnd
+	ColIs(1)
+			ColEnd
 
-		ColIs(4)
+	ColIs(4)
 			LCD_SetCursor(2, 1);
 			_optionsCol = 2;
-		ColEnd
+			ColEnd
 
-		ColIs(7)
+	ColIs(7)
 			LCD_SetCursor(5, 1);
 			_optionsCol = 5;
-		ColEnd
+			ColEnd
 
-		ColIs(11)
+	ColIs(11)
 			LCD_SetCursor(8, 1);
 			_optionsCol = 8;
-		ColEnd
+			ColEnd
 
-		ColIs(14)
+	ColIs(14)
 			LCD_SetCursor(12, 1);
 			_optionsCol = 12;
-		ColEnd
+			ColEnd
 
-		ColIs(17)
+	ColIs(17)
 			LCD_SetCursor(15, 1);
 			_optionsCol = 15;
-		ColEnd
+			ColEnd
 
-		default:
-			_optionsCol = LCD_CursorLeft();
+	default:
+		_optionsCol = LCD_CursorLeft();
 	}
 }
 
@@ -225,7 +269,7 @@ void _CLK_ParseAndSetDateTime(void) {
 		/* ponad 12 miesięcy */
 		error = true;
 	}
-	if (Month(0,0)) {
+	if (Month(0, 0)) {
 		/* zerowy miesiac */
 		error = true;
 	}
@@ -233,22 +277,21 @@ void _CLK_ParseAndSetDateTime(void) {
 		/* ponad 23 godziny */
 		error = true;
 	}
-	if (Month(0,1)||Month(0,3)||Month(0,5)||
-		Month(0,7)||Month(0,8)||Month(1,0)||
-		Month(1,2)) {
+	if (Month(0, 1)||Month(0,3)||Month(0,5)||
+	Month(0,7)||Month(0,8)||Month(1,0)||
+	Month(1,2)) {
 		/* miesiac 31 dniowy */
 		if (date[0] == 3 && date[1] > 1) {
 			error = true;
 		}
 	}
-	if (Month(0,4)||Month(0,6)||Month(0,9)||
-		Month(1,1)) {
+	if (Month(0,4) || Month(0, 6) || Month(0, 9) || Month(1, 1)) {
 		/* miesiac 30 dniowy */
 		if (date[0] == 3 && date[1] != 0) {
 			error = true;
 		}
 	}
-	if (Month(0,2)) {
+	if (Month(0, 2)) {
 		/* luty */
 		if (date[0] > 2) {
 			error = true;
@@ -273,15 +316,14 @@ void _CLK_ParseAndSetDateTime(void) {
 		LCD_PrintCentered("Ommiting update!");
 
 		HAL_Delay(1000);
-	}
-	else {
+	} else {
 		SD_SetDateTime(date, time);
 	}
 }
 
 void MENU_PasswdInput(void) {
-	if (State != ST_PassInput) {
-		State = ST_PassInput;
+	if (M_State != ST_PassInput) {
+		M_State = ST_PassInput;
 		LCD_ClearScreen();
 
 		LCD_PrintCentered("Enter WiFi password:");
@@ -297,12 +339,12 @@ void MENU_PasswdInput(void) {
 }
 
 void MENU_Options(void) {
-	if (State != ST_Options) {
-		State = ST_Options;
+	if (M_State != ST_Options) {
+		M_State = ST_Options;
 		LCD_ClearScreen();
 
 		_currentOption = 1;
-		LCD_PrintOptionsScreen(_optionsString, _currentOption);
+		LCD_PrintOptionsScreen(OPTIONS_STRING, _currentOption);
 		LCD_SetCursor(0, 1);
 		_optionsRow = 1;
 
@@ -311,8 +353,8 @@ void MENU_Options(void) {
 }
 
 void MENU_OptionsSetDateTime(void) {
-	if (State != ST_SetDateTime) {
-		State = ST_SetDateTime;
+	if (M_State != ST_SetDateTime) {
+		M_State = ST_SetDateTime;
 		LCD_ClearScreen();
 
 		LCD_Print("---Date------Time---");
@@ -337,14 +379,14 @@ void MENU_OptionsSetDateTime(void) {
 	}
 }
 
-uint8_t _WiFi_NofNetworks(char* data) {
+uint8_t _WiFi_NofNetworks(char *data) {
 	int amount = 0;
 	for (int i = 0;; i++) {
 		if (data[i] == 0) {
 			return amount;
 		}
 
-		if (data[i] == ';'){
+		if (data[i] == ';') {
 			amount++;
 		}
 	}
@@ -354,8 +396,10 @@ uint8_t _WiFi_NofNetworks(char* data) {
 void _WiFi_RequestConn(void) {
 	int clearRest = 0;
 	for (int i = 0; i < MAX_PASSWD_LEN; i++) {
-			if (!clearRest && WiFiPassword[i] == 0) clearRest = i;
-			if (clearRest) WiFiPassword[i] = 0;
+		if (!clearRest && WiFiPassword[i] == 0)
+			clearRest = i;
+		if (clearRest)
+			WiFiPassword[i] = 0;
 	}
 
 	LCD_ClearScreen();
@@ -366,26 +410,30 @@ void _WiFi_RequestConn(void) {
 	LCD_SetCursor(0, 3);
 	LCD_PrintCentered("please wait");
 
-	uint8_t result = NET_ConnectToWiFi((char*)WiFiPassword, _currentOption);
+	R_Mode = RGB_Rainbow;
+	uint8_t result = NET_ConnectToWiFi((char*) WiFiPassword, _currentOption);
 	LCD_ClearScreen();
+	R_Mode = RGB_Disabled;
 
 	if (result == 0) {
-		LCD_SetCursor(0,1);
+		LCD_SetCursor(0, 1);
 		LCD_PrintCentered("Connected!");
-
-		HAL_Delay(1000);
 	} else {
-		LCD_SetCursor(0,1);
-		LCD_PrintCentered("Couldn't connect");
-		LCD_SetCursor(0,2);
-		LCD_PrintCentered("to chosen network.");
+		LCD_SetCursor(0, 0);
+		LCD_PrintCentered("Connection might");
+		LCD_SetCursor(0, 1);
+		LCD_PrintCentered("not be established");
+		LCD_SetCursor(0, 3);
+		LCD_Print("Check status in menu");
 	}
+
 	HAL_Delay(1000);
+	NET_GetConnInfo();
 }
 
 void MENU_OptionsWifiList(void) {
-	if (State != ST_WiFi) {
-		State = ST_WiFi;
+	if (M_State != ST_WiFi) {
+		M_State = ST_WiFi;
 		LCD_ClearScreen();
 		LCD_DisableBlink();
 
@@ -397,7 +445,10 @@ void MENU_OptionsWifiList(void) {
 
 		_optionsRow = 0;
 
-		char* data = NET_RequestNetworkList();
+		R_Mode = RGB_Rainbow;
+		char *data = NET_RequestNetworkList();
+		R_Mode = RGB_Disabled;
+
 		if (data != NULL) {
 			/* liczba rzedow do poruszania sie */
 			_networksIn = _WiFi_NofNetworks(data);
@@ -420,153 +471,226 @@ void MENU_OptionsWifiList(void) {
 	}
 }
 
-void MENU_Clock(void) {
-	if (State != ST_Clock) {
-		State = ST_Clock;
+void MENU_Clock() {
+	if (M_State != ST_Clock) {
+		M_State = ST_Clock;
 
 		LCD_ClearScreen();
 		LCD_DisableBlink();
+
+		_menuTick = 0;
+		_updateClock = true;
 	}
 
-	char date[9], time[9];
-	float data[2];
+	if (_updateWeather) {
+		/* update jsona do wyslania dla strony, nie przeszkadzac */
+		NET_AbortIT();
 
-	SD_RefreshDateTime();
-	SD_GetDateTime(date, time);
+		if (THS_ReadData(THS_In, _dataIn)) {
+			SD_CreateJson(true, _dataIn, _date, _time);
+		} else {
+			_dataIn = NULL;
+		}
 
-	LCD_PrintDateTime(date, time);
+		if (THS_ReadData(THS_Out, _dataOut)) {
+			SD_CreateJson(false, _dataOut, _date, _time);
+			LCD_SetCursor(0, 1);
+			LCD_Print("                    ");
+			LCD_SetCursor(0, 2);
+			LCD_Print("                    ");
+		} else {
+			_dataOut = NULL;
+		}
 
-	/* update jsona do wyslania dla strony, nie przeszkadzac */
-	NET_AbortIT();
-
-	if (THS_ReadData(THS_In, data)) {
-		LCD_PrintTempInfo(data, NULL);
-		SD_CreateJson(true, data, date, time);
+		_updateWeather = false;
 	}
 
-	LCD_PrintNetworkStatus(Mode, NET_GetConnInfo());
+	if (_userReaction) {
+		NET_GetConnInfo();
+	}
+
+	if (_updateClock || _updateWeather || _userReaction) {
+		SD_RefreshDateTime();
+		SD_GetDateTime(_date, _time);
+
+		if (_dataIn != NULL) {
+			if ((int) _dataIn[0] < 5 || (int) _dataIn[1] < 20) {
+				/* jest tragicznie */
+				R_Mode = RGB_BlinkRed;
+			} else if ((int) _dataIn[0] < 10 || (int) _dataIn[1] < 30) {
+				/* jest slabo */
+				R_Mode = RGB_Red;
+			} else if ((int) _dataIn[0] > 35 || (int) _dataIn[1] > 65) {
+				/* jest slabo */
+				R_Mode = RGB_Red;
+			} else if ((int) _dataIn[0] > 40 || (int) _dataIn[1] > 90) {
+				/* jest tragicznie */
+				R_Mode = RGB_BlinkRed;
+			} else {
+				/* ok */
+				R_Mode = RGB_Green;
+			}
+		}
+
+		LCD_PrintDateTime(_date, _time);
+		LCD_PrintTempInfo(_dataIn, _dataOut);
+		LCD_PrintNetworkStatus(M_Mode, NET_GetCurrentConnStatus());
+
+		_updateClock = false;
+	}
 }
 
-uint8_t MENU_HandleKeys(void) {
-	IfPressed (UP) {
-		LCD_WakeScreen();
+uint8_t MENU_HandleInput(void) {
+	_userReaction = false;
 
-		if (State == ST_Clock) {
-			/* Przejdz w ekran opcji */
-			MENU_Options();
-		} else if (State == ST_Options) {
-			if (_optionsRow > 1) {
-				_optionsRow = LCD_CursorUp();
-				_currentOption--;
-			} else if (_currentOption != 1) {
-				LCD_PrintOptionsScreen(_optionsString, --_currentOption);
-				LCD_SetCursor(0, 1);
-			}
-		} else if (State == ST_PassInput) {
-			/* Dopasuj kolejny znak ASCII */
-			_PWD_SaveAndWrite(_PWD_NextChar());
-		} else if (State == ST_SetDateTime) {
-			/* wstepne ograniczenie inputu */
-			_CLK_HandleDateTimeInput();
-		} else if (State == ST_WiFi) {
-			if (_optionsRow > 0) {
-				_optionsRow = LCD_CursorUp();
-				_currentOption--;
-			} else if (_networksIn > 4 && _currentOption != 1) {
-				LCD_PrintNetworks(_networksList, --_currentOption);
-				LCD_SetCursor(0, 0);
-			}
-		}
+	IfPressed (UP)
+			{
+				LCD_WakeScreen();
 
-		LED_T(Red);
-		return 1;
+				if (M_State == ST_Clock) {
+					/* Przejdz w ekran opcji */
+					MENU_Options();
+				} else if (M_State == ST_Options) {
+					if (_optionsRow > 1) {
+						_optionsRow = LCD_CursorUp();
+						_currentOption--;
+					} else if (_currentOption != 1) {
+						LCD_PrintOptionsScreen(OPTIONS_STRING,
+								--_currentOption);
+						LCD_SetCursor(0, 1);
+					}
+				} else if (M_State == ST_PassInput) {
+					/* Dopasuj kolejny znak ASCII */
+					_PWD_SaveAndWrite(_PWD_NextChar());
+				} else if (M_State == ST_SetDateTime) {
+					/* wstepne ograniczenie inputu */
+					_CLK_HandleDateTimeInput();
+				} else if (M_State == ST_WiFi) {
+					if (_optionsRow > 0) {
+						_optionsRow = LCD_CursorUp();
+						_currentOption--;
+					} else if (_networksIn > 4 && _currentOption != 1) {
+						LCD_PrintNetworks(_networksList, --_currentOption);
+						LCD_SetCursor(0, 0);
+					}
+				}
 
-	} Or (DOWN) {
-		LCD_WakeScreen();
+				_userReaction = true;
+			}Or (DOWN)
+			{
+				LCD_WakeScreen();
 
-		if (State == ST_Options) {
-			if (_optionsRow < 3) {
-				_optionsRow = LCD_CursorDown();
-				_currentOption++;
-			} else if (_currentOption != NOF_OPTIONS) {
-				LCD_PrintOptionsScreen(_optionsString, ++_currentOption - 2);
-				LCD_SetCursor(0, 3);
-			}
-		} else if (State == ST_PassInput) {
-			/* Powrot do trybu zegara */
-			_WiFi_RequestConn();
-			MENU_Clock();
-		} else if (State == ST_SetDateTime) {
-			_CLK_ParseAndSetDateTime();
-			MENU_Clock();
-		} else if (State == ST_WiFi) {
-			//TODO DEBUG n TESTING
-			if (_optionsRow < 4 && _optionsRow < _networksIn - 1) {
-				_optionsRow = LCD_CursorDown();
-				_currentOption++;
-			} else if (_networksIn > 4 && _currentOption != 4) {
-				LCD_PrintNetworks(_networksList, ++_currentOption - 4);
-				LCD_SetCursor(0, 3);
-			}
-		}
+				if (M_State == ST_Options) {
+					if (_optionsRow < 3) {
+						_optionsRow = LCD_CursorDown();
+						_currentOption++;
+					} else if (_currentOption != NOF_OPTIONS) {
+						LCD_PrintOptionsScreen(OPTIONS_STRING,
+								++_currentOption - 2);
+						LCD_SetCursor(0, 3);
+					}
+				} else if (M_State == ST_PassInput) {
+					/* Powrot do trybu zegara */
+					_WiFi_RequestConn();
+					MENU_Clock();
+				} else if (M_State == ST_SetDateTime) {
+					_CLK_ParseAndSetDateTime();
+					MENU_Clock();
+				} else if (M_State == ST_WiFi) {
+					//TODO DEBUG n TESTING
+					if (_optionsRow < 4 && _optionsRow < _networksIn - 1) {
+						_optionsRow = LCD_CursorDown();
+						_currentOption++;
+					} else if (_networksIn > 4 && _currentOption != 4) {
+						LCD_PrintNetworks(_networksList, ++_currentOption - 4);
+						LCD_SetCursor(0, 3);
+					}
+				}
 
-		LED_T(Green);
-		return 1;
+				_userReaction = true;
+			}Or (LEFT)
+			{
+				LCD_WakeScreen();
 
-	} Or (LEFT) {
-		LCD_WakeScreen();
+				if (M_State == ST_PassInput) {
+					/* Poprzedni znak w jednej z dwoch kolumn */
+					if (_PWD_index > 0) {
+						--_PWD_index;
+						LCD_CursorLeft();
+					}
+				} else if (M_State == ST_Options) {
+					MENU_Clock();
+				} else if (M_State == ST_SetDateTime) {
+					_CLK_MoveInputLeft();
+				} else if (M_State == ST_WiFi) {
+					MENU_Options();
+				}
 
-		if (State == ST_PassInput) {
-			/* Poprzedni znak w jednej z dwoch kolumn */
-			if (_PWD_index > 0) {
-				--_PWD_index;
-				LCD_CursorLeft();
-			}
-		} else if (State == ST_Options) {
-			MENU_Clock();
-		} else if (State == ST_SetDateTime) {
-			_CLK_MoveInputLeft();
-		} else if (State == ST_WiFi) {
-			MENU_Options();
-		}
+				_userReaction = true;
+			}Or (RIGHT)
+			{
+				LCD_WakeScreen();
 
-		LED_T(Blue);
-		return 1;
+				if (M_State == ST_PassInput) {
+					/* Kolejny znak w jednej z dwoch kolumn */
+					if (WiFiPassword[_PWD_index] != 0
+							&& _PWD_index < MAX_PASSWD_LEN - 1) {
+						++_PWD_index;
+						LCD_CursorRight();
+					}
+				} else if (M_State == ST_Options) {
+					if (_currentOption == O_CONN_W) {
+						MENU_OptionsWifiList();
+					} else if (_currentOption == O_DISCONN) {
+						NET_WiFiDisconnect();
+						MENU_Clock();
 
-	} Or (RIGHT) {
-		LCD_WakeScreen();
+					} else if (_currentOption == O_FORCE_U) {
+						_updateWeather = true;
+						MENU_Clock();
 
-		if (State == ST_PassInput) {
-			/* Kolejny znak w jednej z dwoch kolumn */
-			if (WiFiPassword[_PWD_index] != 0 && _PWD_index < MAX_PASSWD_LEN - 1) {
-				++_PWD_index;
-				LCD_CursorRight();
-			}
-		} else if (State == ST_Options) {
-			if (_currentOption == 1) {
-				/* Polacz z wifi */
-				MENU_OptionsWifiList();
-			} else if (_currentOption == 2) {
-				/* rozlacz wifi */
-				NET_WiFiDisconnect();
-				MENU_Clock();
+					} else if (_currentOption == O_SET_DT) {
+						MENU_OptionsSetDateTime();
 
-			} else if (_currentOption == 3) {
-				/* Przelacz w tryb ap */
+					} else if (_currentOption == O_CLEAR_SD) {
+						LCD_ClearScreen();
+						LCD_SetCursor(0, 1);
+						LCD_PrintCentered("Please wait");
 
-			} else if (_currentOption == 4) {
-				/* Ustaw date */
-				MENU_OptionsSetDateTime();
-			}
-		} else if (State == ST_SetDateTime) {
-			_CLK_MoveInputRight();
-		} else if (State == ST_WiFi) {
-			MENU_PasswdInput();
-		}
+						R_Mode = RGB_Rainbow;
+						SD_RemoveAllJsons();
+						R_Mode = RGB_Disabled;
 
-		LED_T(Orange);
-		return 1;
+						MENU_Clock();
 
-	} IfEnd;
+					} else if (_currentOption == O_SHUTDOWN) {
+						/* TODO Ogarnac wylaczanie  */
+					}
+				} else if (M_State == ST_SetDateTime) {
+					_CLK_MoveInputRight();
+				} else if (M_State == ST_WiFi) {
+					MENU_PasswdInput();
+				}
+
+				_userReaction = true;
+			}IfEnd;
+
 	return 0;
+}
+
+void MENU_IncTick(void) {
+	++_menuTick;
+
+	LED_T(Orange);
+
+	if (_menuTick % MINUTE == 0) {
+		_updateClock = true;
+	} else if (_menuTick == MINUTE / 2) {
+		LCD_BackgroundOff();
+	}
+
+	if (_menuTick >= MINUTE * UPDATE_INTERVAL) {
+		_updateWeather = true;
+		_menuTick = 0;
+	}
 }

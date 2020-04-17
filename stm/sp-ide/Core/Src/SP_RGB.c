@@ -7,14 +7,14 @@ uint32_t _CCR2; /* GREEN */
 uint32_t _CCR3; /* BLUE */
 
 uint16_t _state;
-RGB_Mode _mode;
+RGB_Mode R_Mode;
 
 void RGB_Init(void) {
 	_CCR1 = 0;
 	_CCR2 = 0;
 	_CCR3 = 0;
 	_state = 0;
-	_mode = RGB_Disabled;
+	R_Mode = RGB_Rainbow;
 }
 
 void _RGB_UpdateRegisters(void) {
@@ -42,7 +42,7 @@ void _RGB_UpdateRegisters(void) {
 }
 
 void _RGB_SetWhite(void) {
-	_mode = RGB_White;
+	R_Mode = RGB_White;
 
 	_CCR1 = MAX_REG_VAL;
 	_CCR2 = MAX_REG_VAL;
@@ -52,7 +52,7 @@ void _RGB_SetWhite(void) {
 }
 
 void _RGB_SetRed(void) {
-	_mode = RGB_Red;
+	R_Mode = RGB_Red;
 
 	_CCR1 = MAX_REG_VAL;
 	_CCR2 = 0;
@@ -62,7 +62,7 @@ void _RGB_SetRed(void) {
 }
 
 void _RGB_SetGreen(void) {
-	_mode = RGB_Green;
+	R_Mode = RGB_Green;
 
 	_CCR1 = 0;
 	_CCR2 = MAX_REG_VAL;
@@ -72,7 +72,7 @@ void _RGB_SetGreen(void) {
 }
 
 void _RGB_SetBlue(void) {
-	_mode = RGB_Blue;
+	R_Mode = RGB_Blue;
 
 	_CCR1 = 0;
 	_CCR2 = 0;
@@ -82,7 +82,7 @@ void _RGB_SetBlue(void) {
 }
 
 void _RGB_SetBlack(void) {
-	_mode = RGB_Disabled;
+	R_Mode = RGB_Disabled;
 
 	_CCR1 = 0;
 	_CCR2 = 0;
@@ -92,9 +92,9 @@ void _RGB_SetBlack(void) {
 }
 
 void _RGB_Rainbow(void) {
-	if (_mode != RGB_Rainbow)
+	if (R_Mode != RGB_Rainbow)
 		_state = 0;
-	_mode = RGB_Rainbow;
+	R_Mode = RGB_Rainbow;
 
 	switch (_state) {
 	case 0: {
@@ -136,9 +136,9 @@ void _RGB_Rainbow(void) {
 }
 
 void _RGB_BlinkRed(void) {
-	if (_mode != RGB_BlinkRed)
+	if (R_Mode != RGB_BlinkRed)
 		_state = 0;
-	_mode = RGB_BlinkRed;
+	R_Mode = RGB_BlinkRed;
 
 	_CCR2 = 0;
 	_CCR3 = 0;
@@ -155,9 +155,9 @@ void _RGB_BlinkRed(void) {
 }
 
 void _RGB_BlinkGreen(void) {
-	if (_mode != RGB_BlinkGreen)
+	if (R_Mode != RGB_BlinkGreen)
 		_state = 0;
-	_mode = RGB_BlinkGreen;
+	R_Mode = RGB_BlinkGreen;
 
 	_CCR1 = 0;
 	_CCR3 = 0;
@@ -174,9 +174,9 @@ void _RGB_BlinkGreen(void) {
 }
 
 void _RGB_BlinkBlue(void) {
-	if (_mode != RGB_BlinkBlue)
+	if (R_Mode != RGB_BlinkBlue)
 		_state = 0;
-	_mode = RGB_BlinkBlue;
+	R_Mode = RGB_BlinkBlue;
 
 	_CCR1 = 0;
 	_CCR2 = 0;
@@ -193,9 +193,9 @@ void _RGB_BlinkBlue(void) {
 }
 
 void _RGB_BlinkWhite(void) {
-	if (_mode != RGB_BlinkWhite)
+	if (R_Mode != RGB_BlinkWhite)
 		_state = 0;
-	_mode = RGB_BlinkWhite;
+	R_Mode = RGB_BlinkWhite;
 
 	if (_state == 0) {
 		_CCR1 = 0;
@@ -214,8 +214,8 @@ void _RGB_BlinkWhite(void) {
 	_RGB_UpdateRegisters();
 }
 
-void RGB_SetMode(RGB_Mode mode) {
-	switch (mode) {
+void RGB_Update() {
+	switch (R_Mode) {
 	case RGB_Disabled:
 		_RGB_SetBlack();
 		break;

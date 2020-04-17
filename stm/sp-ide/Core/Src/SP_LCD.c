@@ -361,7 +361,6 @@ void LCD_PrintTempInfo(float *data1, float *data2) {
 		LCD_NextLine("");
 		LCD_PrintCentered(rh);
 	}
-	LCD_NextLine("");
 }
 
 void LCD_NextLine(const char text[]) {

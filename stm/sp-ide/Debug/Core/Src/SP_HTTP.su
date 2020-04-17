@@ -1,3 +1,0 @@
-SP_HTTP.c:47:7:_HTTP_ParseHeader	64	static
-SP_HTTP.c:74:7:_HTTP_GetRequestUrl	24	static
-SP_HTTP.c:87:6:HTTP_HandleRequest	216	static

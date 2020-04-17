@@ -130,7 +130,8 @@ typedef enum {
 	ST_Options,
 	ST_WiFi,
 	ST_PassInput,
-	ST_SetDateTime
+	ST_SetDateTime,
+	ST_None
 } StateEnum;
 
 typedef enum {

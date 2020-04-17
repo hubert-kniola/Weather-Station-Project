@@ -13,6 +13,7 @@ void MENU_OptionsSetDateTime(void);
 void MENU_OptionsWifiList(void);
 void MENU_PasswdInput(void);
 void MENU_IncTick(void);
+void MENU_ForceUpdate(void);
 
 uint8_t MENU_HandleInput(void);
 

@@ -71,10 +71,6 @@ void _SD_FormatDisk(void) {
 
 #define __resetJsonBuf() for(int i=0;i<MAX_FILENAME_LEN;i++)_jsonBuffer[i]=0
 
-void _SD_RestartNaming(void) {
-	_lastJsonNum = MAX_FILENAME;
-}
-
 char* _SD_GetNextFilename(void) {
 	if (_lastJsonNum == MAX_FILENAME) {
 		_lastJsonNum = 0;
@@ -101,6 +97,11 @@ void _SD_WriteLastFilename(void) {
 	f_printf(&temp, "%lu", _lastJsonNum);
 
 	f_close(&temp);
+}
+
+void _SD_RestartNaming(void) {
+	_lastJsonNum = MAX_FILENAME;
+	_SD_WriteLastFilename();
 }
 
 void _SD_ReadLastFilename(void) {
@@ -195,7 +196,7 @@ void SD_SetDateTime(uint8_t date[], uint8_t time[]) {
 }
 
 char* SD_ReadFile(char *filename, uint32_t *size) {
-	if (f_open(&_fileH, filename, FA_READ) != FR_OK) {
+	if ((_res = f_open(&_fileH, filename, FA_READ)) != FR_OK) {
 		*size = 0;
 		return NULL;
 	}
@@ -343,7 +344,7 @@ char* SD_GetJsonFromEnd(uint32_t offset, uint32_t *size) {
 
 	int name = _lastJsonNum - offset;
 
-	sprintf(filename, "%08d.jso", (name > 0) ? name : MAX_FILENAME - name);
+	sprintf(filename, "%08d.jso", (name >= 0) ? name : MAX_FILENAME - name);
 
 	return SD_ReadFile(filename, size);
 }

@@ -80,6 +80,8 @@ uint8_t _THS_InitConn(uint16_t pin) {
 			return 0;
 		}
 	}
+
+	_clockCounter = 0;
 	WaitOn(1);
 	/* Gotowy */
 	return 1;

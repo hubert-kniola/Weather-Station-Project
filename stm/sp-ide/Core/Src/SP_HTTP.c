@@ -1,6 +1,7 @@
 #include "SP_HTTP.h"
 #include "SP_SD.h"
 #include "SP_NET.h"
+#include "SP_MENU.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -11,9 +12,9 @@
 #define DT_UPDATE_OK		"{\"id\":\"ok\"}"
 #define DT_UPDATE_ERR		"{\"id\":\"err\"}"
 
-#define ALL_AMOUNT(arg) 	"{\"amount\":"arg"}"
-#define ALL_OFFSET_PATTERN "offset\":"
-#define ALL_INDEX_PATTERN	"index\":"
+#define ALL_AMOUNT(arg) 		"{\"amount\":"arg"}"
+#define ALL_OFFSET_PATTERN 		"offset\":"
+#define ALL_INDEX_PATTERN		"index\":"
 
 #define MAX_REQUEST_LEN		20
 #define MAX_RESPONSE_LEN	400
@@ -115,6 +116,8 @@ void HTTP_HandleRequest(char *request, char connID) {
 
 		NET_CloseConnSignal(connID);
 	} OR_ROUTE("GET /now") {
+		MENU_ForceUpdate();
+
 		char *file = SD_GetLastJson(&size);
 		header = _HTTP_ParseHeader(RSP_OK, CT_JSON, size, CN_CLOSE);
 
@@ -135,7 +138,7 @@ void HTTP_HandleRequest(char *request, char connID) {
 		NET_SendTCPData(connID, file);
 		NET_CloseConnSignal(connID);
 
-	} OR_ROUTE("POST /all/elem") {
+	} OR_ROUTE("POST /all/logs") {
 		int offset, index;
 
 		int ix = NET_GetIndexForPattern(ALL_OFFSET_PATTERN);
@@ -171,9 +174,18 @@ void HTTP_HandleRequest(char *request, char connID) {
 		index = atoi(tempStr);
 
 		char *file = SD_GetJsonFromEnd(offset + index, &size);
-		header = _HTTP_ParseHeader(RSP_OK, CT_JSON, size, CN_CLOSE);
-		NET_SendTCPData(connID, header);
-		NET_SendTCPData(connID, file);
+		if (file != NULL) {
+			header = _HTTP_ParseHeader(RSP_OK, CT_JSON, size, CN_CLOSE);
+			NET_SendTCPData(connID, header);
+			NET_SendTCPData(connID, file);
+		} else {
+			size = strlen(ALL_AMOUNT("0"));
+
+			header = _HTTP_ParseHeader(RSP_OK, CT_JSON, size, CN_CLOSE);
+			NET_SendTCPData(connID, header);
+			NET_SendTCPData(connID, ALL_AMOUNT("0"));
+		}
+
 		NET_CloseConnSignal(connID);
 	} OR_ROUTE("POST /dt") {
 		int index = NET_GetIndexForPattern(DT_UPDATE_PATTERN);

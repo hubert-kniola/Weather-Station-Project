@@ -59,7 +59,7 @@ extern RGB_Mode R_Mode;
 #define O_SHUTDOWN	6
 
 #define MINUTE 60
-#define UPDATE_INTERVAL 10
+#define UPDATE_INTERVAL 30
 
 char WiFiPassword[MAX_PASSWD_LEN];
 uint8_t _PWD_index;
@@ -101,10 +101,10 @@ void MENU_Init(void) {
 		_dataOut[i] = 0.f;
 	}
 
+	SD_RefreshDateTime();
+	SD_GetDateTime(_date, _time);
 	THS_ReadData(THS_In, _dataIn);
 	HAL_Delay(1000);
-
-	R_Mode = RGB_Disabled;
 }
 
 void _PWD_ResetPasswd(void) {
@@ -486,6 +486,9 @@ void MENU_Clock() {
 		/* update jsona do wyslania dla strony, nie przeszkadzac */
 		NET_AbortIT();
 
+		SD_RefreshDateTime();
+		SD_GetDateTime(_date, _time);
+
 		if (THS_ReadData(THS_In, _dataIn)) {
 			SD_CreateJson(true, _dataIn, _date, _time);
 		} else {
@@ -502,16 +505,20 @@ void MENU_Clock() {
 			_dataOut = NULL;
 		}
 
+		NET_StartIT();
+
 		_updateWeather = false;
 	}
 
-	if (_userReaction) {
+	if (_userReaction || _updateWeather) {
 		NET_GetConnInfo();
 	}
 
 	if (_updateClock || _updateWeather || _userReaction) {
-		SD_RefreshDateTime();
-		SD_GetDateTime(_date, _time);
+		if (!_updateWeather) {
+			SD_RefreshDateTime();
+			SD_GetDateTime(_date, _time);
+		}
 
 		if (_dataIn != NULL) {
 			if ((int) _dataIn[0] < 5 || (int) _dataIn[1] < 20) {
@@ -597,12 +604,11 @@ uint8_t MENU_HandleInput(void) {
 					_CLK_ParseAndSetDateTime();
 					MENU_Clock();
 				} else if (M_State == ST_WiFi) {
-					//TODO DEBUG n TESTING
-					if (_optionsRow < 4 && _optionsRow < _networksIn - 1) {
+					if (_optionsRow < 3 && _optionsRow < _networksIn) {
 						_optionsRow = LCD_CursorDown();
 						_currentOption++;
-					} else if (_networksIn > 4 && _currentOption != 4) {
-						LCD_PrintNetworks(_networksList, ++_currentOption - 4);
+					} else if (_currentOption != _networksIn) {
+						LCD_PrintNetworks(_networksList, ++_currentOption - 3);
 						LCD_SetCursor(0, 3);
 					}
 				}
@@ -642,11 +648,13 @@ uint8_t MENU_HandleInput(void) {
 					if (_currentOption == O_CONN_W) {
 						MENU_OptionsWifiList();
 					} else if (_currentOption == O_DISCONN) {
+						R_Mode = RGB_Rainbow;
 						NET_WiFiDisconnect();
 						MENU_Clock();
 
 					} else if (_currentOption == O_FORCE_U) {
 						_updateWeather = true;
+						R_Mode = RGB_Rainbow;
 						MENU_Clock();
 
 					} else if (_currentOption == O_SET_DT) {
@@ -681,8 +689,6 @@ uint8_t MENU_HandleInput(void) {
 void MENU_IncTick(void) {
 	++_menuTick;
 
-	LED_T(Orange);
-
 	if (_menuTick % MINUTE == 0) {
 		_updateClock = true;
 	} else if (_menuTick == MINUTE / 2) {
@@ -693,4 +699,29 @@ void MENU_IncTick(void) {
 		_updateWeather = true;
 		_menuTick = 0;
 	}
+}
+
+void MENU_ForceUpdate(void) {
+	NET_AbortIT();
+
+	R_Mode = RGB_Rainbow;
+
+	SD_RefreshDateTime();
+	SD_GetDateTime(_date, _time);
+
+	if (THS_ReadData(THS_In, _dataIn)) {
+		SD_CreateJson(true, _dataIn, _date, _time);
+	} else {
+		_dataIn = NULL;
+	}
+
+	if (THS_ReadData(THS_Out, _dataOut)) {
+		SD_CreateJson(false, _dataOut, _date, _time);
+	} else {
+		_dataOut = NULL;
+	}
+
+	R_Mode = RGB_BlinkGreen;
+
+	NET_StartIT();
 }

@@ -23,6 +23,9 @@
 * Język C - oprogramowanie płytki STM
 * Język HTML 5 - struktura strony internetowej 
 * Język CSS 3 - wygląd strony internetowej
+* Język JavaScript - skryptowa obsługa strony
+* RestLike API - przesył informacji
+* Fetch API - pobieranie informacji
 * Biblioteka CSS -  Bootstrap 4 - responsywność strony internetowej
 
 ## Biblioteki języka C użyte w projekcie:

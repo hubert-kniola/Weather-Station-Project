@@ -28,10 +28,10 @@
 ## Biblioteki języka C użyte w projekcie:
 
 
-# Strona internetowa została stworzona w celu odczytywania danych na temat pogody:
+#### Strona internetowa została stworzona w celu odczytywania danych na temat pogody:
 
 
-# Obudowa stacji pogodowej została wykonana przy użyciu programu AutoDesk Fusion 360. Fragmenty obudowy: 
+#### Obudowa stacji pogodowej została wykonana przy użyciu programu AutoDesk Fusion 360. Fragmenty obudowy: 
 <p align="center">
   <img src="/model3d/Photo3D/Obudowa.png" width="500" title="Obudowa">
 </p>

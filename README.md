@@ -23,7 +23,7 @@
 * Język C - oprogramowanie płytki STM
 * Język HTML 5 - struktura strony internetowej 
 * Język CSS 3 - wygląd strony internetowej
-* Język Bootstrap 4 - responsywność strony internetowej
+* Biblioteka CSS -  Bootstrap 4 - responsywność strony internetowej
 
 ## Biblioteki języka C użyte w projekcie:
 

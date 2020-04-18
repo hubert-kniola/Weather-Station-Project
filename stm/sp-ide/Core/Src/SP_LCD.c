@@ -43,7 +43,6 @@
 #define HIN_CHAR 	4
 #define HOUT_CHAR 	3
 
-/* ----------------- Konfiguracja uzytkownika ------------------- */
 /* Port glowny i piny */
 #define PORT 	GPIOE
 #define RS_PIN GPIO_PIN_4
@@ -56,10 +55,9 @@
 
 /* Port i pin podswietlenia */
 #define BG_PORT 	GPIOC
-#define BG_PIN 	GPIO_PIN_15
+#define BG_PIN 		GPIO_PIN_15
 
 extern TIM_HandleTypeDef htim3; /* uzyj numeru timera w LCD_WakeScreen */
-/* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 uint16_t _readyData[4];
 
@@ -431,7 +429,7 @@ void LCD_DefineCustomChar(uint8_t location, uint8_t bytes[]) {
 void LCD_PrintDateTime(const char date[], const char time[]) {
 	LCD_SetCursor(0, 0);
 	LCD_Print(date);
-	LCD_SetCursor(12, 0);
+	LCD_SetCursor(15, 0);
 	LCD_Print(time);
 	LCD_NextLine("");
 }

@@ -15,12 +15,9 @@ typedef struct {
 #define MAX_FILESIZE 		7000
 #define MAX_FILENAME_LEN 	13
 #define MAX_LS_LEN			1400+2
+#define MAX_FILENAME 		99999999
 
-#define MAX_FILENAME 99999999
-
-/* ----------------- Konfiguracja uzytkownika ------------------- */
 extern RTC_HandleTypeDef hrtc;
-/* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 RTC_TimeTypeDef _Time;
 RTC_DateTypeDef _Date;

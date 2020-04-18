@@ -18,6 +18,7 @@ typedef enum Mode
 } RGB_Mode;
 
 void RGB_Init(void);
-void RGB_Update();
+void RGB_Update(void);
+void RGB_ToggleUsage(void);
 
 #endif

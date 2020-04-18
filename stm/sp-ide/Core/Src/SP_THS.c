@@ -9,14 +9,12 @@
 #define ERROR_RANGE 	10
 #define SECOND 			1000
 
-/* ----------------- Konfiguracja uzytkownika ------------------- */
 /* Port i piny czujnika */
 #define THS_PORT 	GPIOC
 #define PIN1 		GPIO_PIN_0 /* Wewnetrzny */
 #define PIN2 		GPIO_PIN_1 /* Zewnetrzny */
 
 extern TIM_HandleTypeDef htim4; /* Wymagany jest period > 18_000 i czestotliwosc 1 MHz */
-/* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 bool _ready;
 uint8_t _readyData[5];
@@ -54,9 +52,9 @@ void _THS_SetPinInput(uint16_t pin) {
 	HAL_GPIO_Init(THS_PORT, &GPIO_InitStruct);
 }
 
-#define Write(val) HAL_GPIO_WritePin(THS_PORT, pin, val)
-#define Read() HAL_GPIO_ReadPin(THS_PORT, pin)
-#define WaitOn(arg) while (HAL_GPIO_ReadPin(THS_PORT, pin) == arg)
+#define __write(val) HAL_GPIO_WritePin(THS_PORT, pin, val)
+#define __read() HAL_GPIO_ReadPin(THS_PORT, pin)
+#define __waitOn(arg) while (HAL_GPIO_ReadPin(THS_PORT, pin) == arg)
 
 uint8_t _THS_InitConn(uint16_t pin) {
 	if (!_ready)
@@ -64,25 +62,25 @@ uint8_t _THS_InitConn(uint16_t pin) {
 	_THS_SetPinOutput(pin);
 
 	/* Start */
-	Write(0);
+	__write(0);
 	HAL_Delay(18);
-	Write(1);
+	__write(1);
 	THS_Delay(START_HI);
 
 	/* Synchro */
 	_THS_SetPinInput(pin);
 	THS_Delay(RESPONSE);
 
-	if (!Read()) {
+	if (!__read()) {
 		THS_Delay(2 * RESPONSE);
-		if (!Read()) {
+		if (!__read()) {
 			/* Brak synchro */
 			return 0;
 		}
 	}
 
 	_clockCounter = 0;
-	WaitOn(1);
+	__waitOn(1);
 	/* Gotowy */
 	return 1;
 }
@@ -92,7 +90,7 @@ uint8_t _THS_ReadByte(uint16_t pin) {
 
 	for (uint8_t bit = 0; bit < 8; bit++) {
 		_clockCounter = 0;
-		WaitOn(0) {
+		__waitOn(0) {
 			/* Podany pin nie jest podpiety, eternal loop */
 			if (_clockCounter > 200)
 				return 255;
@@ -100,9 +98,9 @@ uint8_t _THS_ReadByte(uint16_t pin) {
 		THS_Delay(SIGNAL_WAIT);
 
 		byte <<= 1;
-		if (Read()) {
+		if (__read()) {
 			byte |= 1; /* mamy 1 */
-			WaitOn(1);
+			__waitOn(1);
 		}
 		/* else mamy 0 */
 	}

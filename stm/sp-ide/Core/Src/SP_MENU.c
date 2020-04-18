@@ -20,7 +20,6 @@
 #define MIN_DT_CHAR '0'
 #define MAX_DT_CHAR '9'
 
-/* ----------------- Konfiguracja uzytkownika ------------------- */
 #define PORT 	GPIOE
 
 #define UP 		GPIO_PIN_7
@@ -31,7 +30,6 @@
 extern StateEnum M_State;
 extern ModeEnum M_Mode;
 extern RGB_Mode R_Mode;
-/* ----------------- /Konfiguracja uzytkownika ------------------ */
 
 /* Makra dla przyciskow */
 #define IfPressed(arg) if(HAL_GPIO_ReadPin(PORT,arg)){HAL_Delay(BTN_PRESSED_TIME);if(HAL_GPIO_ReadPin(PORT,arg)){while(HAL_GPIO_ReadPin(PORT,arg));
@@ -48,18 +46,18 @@ extern RGB_Mode R_Mode;
 /* kazda opcja musi sie konczyc srednikiem
  * oraz musi maks 20 znakow,
  * dodatkowo update NOF_OPTIONS i O_* */
-#define OPTIONS_STRING "1: Force update;2: Connect to WiFi;3: WiFi Disconnect;4: Set time and date;5: Clear SD data;6: Shutdown device;"
+#define OPTIONS_STRING "1: Force update;2: Connect to WiFi;3: WiFi Disconnect;4: Set time and date;5: Clear SD data;6: Toggle RGB usage;"
 #define NOF_OPTIONS	 6
 
-#define O_FORCE_U	1
-#define O_CONN_W	2
-#define O_DISCONN	3
-#define O_SET_DT	4
-#define O_CLEAR_SD	5
-#define O_SHUTDOWN	6
+#define O_FORCE_U		1
+#define O_CONN_W		2
+#define O_DISCONN		3
+#define O_SET_DT		4
+#define O_CLEAR_SD		5
+#define O_TOGGLE_RGB 	6
 
-#define MINUTE 60
-#define UPDATE_INTERVAL 30
+#define MINUTE 				60
+#define UPDATE_INTERVAL 	30
 
 char WiFiPassword[MAX_PASSWD_LEN];
 uint8_t _PWD_index;
@@ -482,6 +480,14 @@ void MENU_Clock() {
 		_updateClock = true;
 	}
 
+	bool displayedTwo = false;
+
+	if (_dataOut != NULL) {
+		displayedTwo = true;
+	}
+
+	uint8_t resultOut;
+
 	if (_updateWeather) {
 		/* update jsona do wyslania dla strony, nie przeszkadzac */
 		NET_AbortIT();
@@ -495,12 +501,8 @@ void MENU_Clock() {
 			_dataIn = NULL;
 		}
 
-		if (THS_ReadData(THS_Out, _dataOut)) {
+		if ((resultOut = THS_ReadData(THS_Out, _dataOut))) {
 			SD_CreateJson(false, _dataOut, _date, _time);
-			LCD_SetCursor(0, 1);
-			LCD_Print("                    ");
-			LCD_SetCursor(0, 2);
-			LCD_Print("                    ");
 		} else {
 			_dataOut = NULL;
 		}
@@ -539,8 +541,21 @@ void MENU_Clock() {
 			}
 		}
 
+		/* nie printujemy sekund na wyswietlaczu */
+		_time[5] = 0;
+
 		LCD_PrintDateTime(_date, _time);
+
+		if ((displayedTwo && !resultOut) || (!displayedTwo && resultOut)) {
+			/* zewnetrzny odpiety lub podpiety czysc ekran */
+			LCD_SetCursor(0, 1);
+			LCD_Print("                    ");
+			LCD_SetCursor(0, 2);
+			LCD_Print("                    ");
+		}
+
 		LCD_PrintTempInfo(_dataIn, _dataOut);
+
 		LCD_PrintNetworkStatus(M_Mode, NET_GetCurrentConnStatus());
 
 		_updateClock = false;
@@ -565,6 +580,13 @@ uint8_t MENU_HandleInput(void) {
 						LCD_PrintOptionsScreen(OPTIONS_STRING,
 								--_currentOption);
 						LCD_SetCursor(0, 1);
+					} else {
+						_currentOption = NOF_OPTIONS;
+						_optionsRow = 3;
+
+						LCD_PrintOptionsScreen(OPTIONS_STRING,
+								_currentOption - 2);
+						LCD_SetCursor(0, 3);
 					}
 				} else if (M_State == ST_PassInput) {
 					/* Dopasuj kolejny znak ASCII */
@@ -595,6 +617,13 @@ uint8_t MENU_HandleInput(void) {
 						LCD_PrintOptionsScreen(OPTIONS_STRING,
 								++_currentOption - 2);
 						LCD_SetCursor(0, 3);
+					} else {
+						_currentOption = 1;
+						_optionsRow = 1;
+
+						LCD_PrintOptionsScreen(OPTIONS_STRING,
+								_currentOption);
+						LCD_SetCursor(0, 1);
 					}
 				} else if (M_State == ST_PassInput) {
 					/* Powrot do trybu zegara */
@@ -671,8 +700,9 @@ uint8_t MENU_HandleInput(void) {
 
 						MENU_Clock();
 
-					} else if (_currentOption == O_SHUTDOWN) {
-						/* TODO Ogarnac wylaczanie  */
+					} else if (_currentOption == O_TOGGLE_RGB) {
+						RGB_ToggleUsage();
+						MENU_Clock();
 					}
 				} else if (M_State == ST_SetDateTime) {
 					_CLK_MoveInputRight();
@@ -691,7 +721,7 @@ void MENU_IncTick(void) {
 
 	if (_menuTick % MINUTE == 0) {
 		_updateClock = true;
-	} else if (_menuTick == MINUTE / 2) {
+	} else if (_menuTick % (MINUTE / 2) == 0) {
 		LCD_BackgroundOff();
 	}
 

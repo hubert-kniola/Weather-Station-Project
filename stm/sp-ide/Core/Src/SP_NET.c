@@ -32,8 +32,7 @@
 #define PACKET_SIZE				2000
 #define PACKET_INTERVAL			20
 
-#define NETWORK_SEPARATOR '\\'
-
+#define NETWORK_SEPARATOR 			'\\'
 #define CLIENT_IP_PATTERN 			"STAIP,\""
 #define OK_PATTERN 					"OK\r\n"
 #define REQUEST_RECIEVED_PATTERN 	"+IPD,"

@@ -65,7 +65,9 @@
   <div class="my-5"></div>
 
   <section>
-    <h4 id="error" class="text-white text-center m-0">Weather data available on the device</h4>
+    <div class="container-fluid">
+      <h4 id="error" class="text-white text-center m-0">Weather data available on the device</h4>
+    </div>
     <hr class="my-4">
     <div id="phase1">
       <p id="info" class="lead text-white text-center"></p>
@@ -132,6 +134,10 @@
 
   var parent = document.getElementById('fetched_data');
   var url = window.location.href;
+
+  var to = url.lastIndexOf('/');
+  to = to == -1 ? url.length : to + 1;
+  url = url.substring(0, to);
 
   setTimeout(() => {
     fetch(url + 'all')

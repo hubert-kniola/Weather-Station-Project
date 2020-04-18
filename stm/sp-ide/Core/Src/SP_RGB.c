@@ -9,11 +9,16 @@ uint32_t _CCR3; /* BLUE */
 uint16_t _state;
 RGB_Mode R_Mode;
 
+uint8_t _useRGB;
+
 void RGB_Init(void) {
 	_CCR1 = 0;
 	_CCR2 = 0;
 	_CCR3 = 0;
 	_state = 0;
+
+	_useRGB = 1;
+
 	R_Mode = RGB_Rainbow;
 }
 
@@ -215,36 +220,44 @@ void _RGB_BlinkWhite(void) {
 }
 
 void RGB_Update() {
-	switch (R_Mode) {
-	case RGB_Disabled:
+	if (_useRGB) {
+		switch (R_Mode) {
+		case RGB_Disabled:
+			_RGB_SetBlack();
+			break;
+		case RGB_White:
+			_RGB_SetWhite();
+			break;
+		case RGB_Red:
+			_RGB_SetRed();
+			break;
+		case RGB_Green:
+			_RGB_SetGreen();
+			break;
+		case RGB_Blue:
+			_RGB_SetBlue();
+			break;
+		case RGB_BlinkRed:
+			_RGB_BlinkRed();
+			break;
+		case RGB_BlinkGreen:
+			_RGB_BlinkGreen();
+			break;
+		case RGB_BlinkBlue:
+			_RGB_BlinkBlue();
+			break;
+		case RGB_BlinkWhite:
+			_RGB_BlinkWhite();
+			break;
+		case RGB_Rainbow:
+			_RGB_Rainbow();
+			break;
+		}
+	} else {
 		_RGB_SetBlack();
-		break;
-	case RGB_White:
-		_RGB_SetWhite();
-		break;
-	case RGB_Red:
-		_RGB_SetRed();
-		break;
-	case RGB_Green:
-		_RGB_SetGreen();
-		break;
-	case RGB_Blue:
-		_RGB_SetBlue();
-		break;
-	case RGB_BlinkRed:
-		_RGB_BlinkRed();
-		break;
-	case RGB_BlinkGreen:
-		_RGB_BlinkGreen();
-		break;
-	case RGB_BlinkBlue:
-		_RGB_BlinkBlue();
-		break;
-	case RGB_BlinkWhite:
-		_RGB_BlinkWhite();
-		break;
-	case RGB_Rainbow:
-		_RGB_Rainbow();
-		break;
 	}
+}
+
+void RGB_ToggleUsage(void) {
+	_useRGB = (_useRGB) ? 0 : 1;
 }

@@ -32,9 +32,12 @@
 
 
 ## Obudowa stacji pogodowej została wykonana przy użyciu programu AutoDesk Fusion 360. Fragmenty obudowy: 
-
-
-
+<p align="center">
+  <img src="/model3d/Photo3D/Obudowa.png" width="1000" title="Screen1">
+</p>
+<p align="center">
+  <img src="/model3d/Photo3D/Czujniki.png" width="1000" title="Screen2">
+</p>
 
 ## Autorzy
 * Hubert Knioła

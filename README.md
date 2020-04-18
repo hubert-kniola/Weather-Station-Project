@@ -40,9 +40,9 @@
   <img src="/website/wwwphotos/data.png" width="400" title="Dane">
 </p>
 <p align="center">
-  <img src="/website/wwwphotos/phonecurrent.png" width="400" title="Wersja mobilna">
-  <img src="/website/wwwphotos/phonedata.png" width="400" title="Wersja mobilna">
-  <img src="/website/wwwphotos/phoneabout.png" width="400" title="Wersja mobilna">
+  <img src="/website/wwwphotos/phonecurrent.jpg" width="200" title="Wersja mobilna1">
+  <img src="/website/wwwphotos/phonedata.jpg" width="200" title="Wersja mobilna2">
+  <img src="/website/wwwphotos/phoneabout.jpg" width="200" title="Wersja mobilna3">
 </p>
 
 #### Obudowa stacji pogodowej została wykonana przy użyciu programu Autodesk Fusion 360.  Fragmenty [obudowy](https://github.com/PUT-PTM-2020/P14/tree/master/model3d/Photo3D): 

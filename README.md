@@ -31,8 +31,7 @@
 ## Strona internetowa została stworzona w celu odczytywania danych na temat pogody:
 
 
-## Obudowa stacji pogodowej została wykonana przy użyciu programu AutoDesk Fusion 360
-## Fragmenty obudowy: 
+## Obudowa stacji pogodowej została wykonana przy użyciu programu AutoDesk Fusion 360. Fragmenty obudowy: 
 
 
 

@@ -31,7 +31,7 @@
 #### Strona internetowa została stworzona w celu odczytywania danych na temat pogody:
 
 
-#### Obudowa stacji pogodowej została wykonana przy użyciu programu Autodesk Fusion 360. [Fusion360](https://github.com/PUT-PTM-2020/P14/tree/master/model3d/Photo3D) Fragmenty obudowy: 
+#### Obudowa stacji pogodowej została wykonana przy użyciu programu Autodesk Fusion 360. [Obudowa](https://github.com/PUT-PTM-2020/P14/tree/master/model3d/Photo3D) Fragmenty obudowy: 
 
 <p align="center">
   <img src="/model3d/Photo3D/Obudowa.png" width="800" title="Obudowa">

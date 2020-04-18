@@ -31,8 +31,14 @@
 ## Biblioteki języka C użyte w projekcie:
 
 
-#### Strona internetowa została stworzona w celu odczytywania danych na temat pogody:
+#### [Strona](https://github.com/PUT-PTM-2020/P14/tree/master/website/wwwphotos) internetowa została stworzona w celu odczytywania danych na temat pogody:
 
+<p align="center">
+  <img src="/website/wwwphotos/currentweather.png" width="400" title="Obudowa">
+</p>
+<p align="center">
+  <img src="/website/wwwphotos/data.png" width="400" title="Czujniki">
+</p>
 
 #### Obudowa stacji pogodowej została wykonana przy użyciu programu Autodesk Fusion 360.  Fragmenty [obudowy](https://github.com/PUT-PTM-2020/P14/tree/master/model3d/Photo3D): 
 

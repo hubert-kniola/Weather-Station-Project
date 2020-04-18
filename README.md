@@ -1,5 +1,7 @@
 # Weather Station
 
+## Instrukcja użytkowania
+
 ## O projekcie
 
 ### Celem projektu było własnoręczne utworzenie stacji pogodowej przy zastosowaniu następujących elementów:

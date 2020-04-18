@@ -30,7 +30,7 @@
 
 ## Biblioteki języka C użyte w projekcie:
 
-#### [Elementy] hardware projektu:
+#### [Elementy](https://github.com/PUT-PTM-2020/P14/tree/master/stm/stmphotos) hardware projektu:
 
 <p align="center">
   <img src="/stm/stmphotos/hardware.jpg" width="400" title="Aktualna pogoda">

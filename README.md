@@ -1,11 +1,12 @@
 # Weather Station
-
+```
  __      __               __  .__                     _________ __          __  .__               
 /  \    /  \ ____ _____ _/  |_|  |__   ___________   /   _____//  |______ _/  |_|__| ____   ____  
 \   \/\/   // __ \\__  \\   __\  |  \_/ __ \_  __ \  \_____  \\   __\__  \\   __\  |/  _ \ /    \ 
  \        /\  ___/ / __ \|  | |   Y  \  ___/|  | \/  /        \|  |  / __ \|  | |  (  <_> )   |  \
   \__/\  /  \___  >____  /__| |___|  /\___  >__|    /_______  /|__| (____  /__| |__|\____/|___|  /
        \/       \/     \/          \/     \/                \/           \/                    \/ 
+```
 
 # About
 
@@ -28,6 +29,7 @@
 
 
 ## Strona internetowa została stworzona w celu odczytywania danych na temat pogody:
+
 
 ## Obudowa stacji pogodowej została wykonana przy użyciu programu AutoDesk Fusion 360
 ## Fragmenty obudowy: 

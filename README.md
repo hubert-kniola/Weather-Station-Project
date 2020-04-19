@@ -1,18 +1,18 @@
 # Weather Station
 
 ## Instrukcja użytkowania
-
+//TODO
 ## O projekcie
 
 ### Celem projektu było własnoręczne utworzenie stacji pogodowej przy zastosowaniu następujących elementów:
-* Moduł WiFi ESP8266
+* Moduł WiFi (mikrokontroler ESP8266)
 * Moduł karty SD
 * Czujnik temperatury i wilgotności powietrza DHT11
 * Dioda RGB
 * Wyświetlacz LCD 4x20 ze sterownikiem HD44780
 * Przyciski Tact-Switch
 * Powerbank
-* Płytka STM32F407VG Discovery
+* Mikrokontroler STM32F407VG Discovery
 
 ### Technologia zastosowana w projekcie:
 * Język C - oprogramowanie płytki STM

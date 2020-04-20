@@ -4,7 +4,7 @@
 #### Instrukcja obsługi urządzenia
 //TODO
 #### Instrukcja obsługi strony internetowej
-1. Aby poprawnie uzyskać dostęp do danych udostępnianych przez stację pogodową niezbędne jest posiadanie sprawnego połączenia internetowego. Bez niego wiadomość strona internetowa będzie wyświetlana jako czysty html.
+1. Aby poprawnie uzyskać dostęp do danych udostępnianych przez stację pogodową niezbędne jest posiadanie sprawnego połączenia internetowego. Bez niego strona internetowa będzie wyświetlana jako czysty html, bez dodatkowej szaty wizualnej.
 1. Użytkownik po podłączeniu do sieci bezprzewodowej wchodząc pod adres IP nadany stacji w podsieci routera znajdzie się na stronie głównej.
 1. Główna strona zawiera umieszone pod napisem `Weather Station` odnośniki do następujących podstron: `data`, `about`. Obecne poniżej pole `Current Weather` po pobraniu danych z urządzenia wyświetli aktualną pogodę oraz zsynchronizuje czas urządzenia z czasem systemu stacji.
 1. Wciśnięcie przez użytkownika odnośnika `data` skutkować będzie przeniesieniem na podstronę, gdzie została udostępniona możliwość podglądu starszych odczytów pogody znajdujących się w pamięci urządzenia. Po pobraniu ilości dostępnych danych użytkownik zostanie poproszony o wpisanie zakresu danych do pobrania.

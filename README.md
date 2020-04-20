@@ -8,10 +8,10 @@
 * `data`
 * `about`
 
-    Obecna poniżej opcja `Current Weather`, która po pobraniu danych z urządzenia wyświetli aktualną pogodę.
+    Obecna poniżej opcja `Current Weather` po pobraniu danych z urządzenia wyświetli aktualną pogodę.
 1. Wciśnięcie przez użytkownika odnośnika `data` skutkować będzie przeniesieniem na podstronę, gdzie została udostępniona możliwość podglądu starszych odczytów na temat pogody.
 1. Wciśnięcie przez  użytkownika odnośnika `about` powoduję przejście na podstronę poświęconą autorom projektu oraz informacjom ogólnym na temat stacji pogodowej.
-#### Instrukcja obsługi 
+#### Instrukcja obsługi urządzenia
 
 ## O projekcie
 

@@ -3,10 +3,11 @@
 ## Instrukcja użytkowania
 1. Aby poprawnie uzyskać dostęp do danych udostępnianych przez stację pogodową niezbędne jest posiadanie sprawnego połączenia internetowego.
 1. Użytkownik po podłączeniu do lokalnej sieci internetowej wchodząc pod adres `192.168.0.106` znajdzię się na stronie obsługi urządzenia.
-1. Główna strona zawiera umieszone pod napisem *Weather Stations* odnośniki do następujących podstron:
+1. Główna strona zawiera umieszone pod napisem `Weather Stations` odnośniki do następujących podstron:
 * `data`
 * `about`
-Obecna jest również opcja Current Weather, która po pobraniu danych z urządzenia wyświetli aktualną pogodę.
+
+Obecna poniżej opcja `Current Weather`, która po pobraniu danych z urządzenia wyświetli aktualną pogodę.
 1. Wciśnięcie przez użytkownika odnośnika `data` skutkować będzie przeniesieniem na podstronę, gdzie została udostępniona możliwość podglądu starszych odczytów na temat pogody.
 1. Wciśnięcie przez  użytkownika odnośnika `about` powoduję przejście na podstronę poświęconą autorom projektu oraz informacjom ogólnym na temat stacji pogodowej.
 

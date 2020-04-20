@@ -1,17 +1,15 @@
 # Weather Station
 
 ## Instrukcja użytkowania
-#### Instrukcja obsługi strony internetowej
-1. Aby poprawnie uzyskać dostęp do danych udostępnianych przez stację pogodową niezbędne jest posiadanie sprawnego połączenia internetowego.
-1. Użytkownik po podłączeniu do lokalnej sieci internetowej wchodząc pod adres `192.168.0.106` znajdzię się na stronie obsługi urządzenia.
-1. Główna strona zawiera umieszone pod napisem `Weather Stations` odnośniki do następujących podstron: `data`, `about`
-    Obecna poniżej opcja `Current Weather` po pobraniu danych z urządzenia wyświetli aktualną pogodę.
-1. Wciśnięcie przez użytkownika odnośnika `data` skutkować będzie przeniesieniem na podstronę, gdzie została udostępniona możliwość podglądu starszych odczytów na temat pogody.
-1. Wciśnięcie przez  użytkownika odnośnika `about` powoduję przejście na podstronę poświęconą autorom projektu oraz informacjom ogólnym na temat stacji pogodowej.
 #### Instrukcja obsługi urządzenia
 //TODO
+#### Instrukcja obsługi strony internetowej
+1. Aby poprawnie uzyskać dostęp do danych udostępnianych przez stację pogodową niezbędne jest posiadanie sprawnego połączenia internetowego. Bez niego wiadomość strona internetowa będzie wyświetlana jako czysty html.
+1. Użytkownik po podłączeniu do sieci bezprzewodowej wchodząc pod adres IP nadany stacji w podsieci routera znajdzie się na stronie głównej.
+1. Główna strona zawiera umieszone pod napisem `Weather Station` odnośniki do następujących podstron: `data`, `about`. Obecne poniżej pole `Current Weather` po pobraniu danych z urządzenia wyświetli aktualną pogodę oraz zsynchronizuje czas urządzenia z czasem systemu stacji.
+1. Wciśnięcie przez użytkownika odnośnika `data` skutkować będzie przeniesieniem na podstronę, gdzie została udostępniona możliwość podglądu starszych odczytów pogody znajdujących się w pamięci urządzenia. Po pobraniu ilości dostępnych danych użytkownik zostanie poproszony o wpisanie zakresu danych do pobrania.
+1. Wciśnięcie przez  użytkownika odnośnika `about` powoduję przejście na podstronę poświęconą autorom projektu oraz informacjom ogólnym na temat stacji pogodowej.
 ## O projekcie
-
 ### Celem projektu było własnoręczne utworzenie stacji pogodowej przy zastosowaniu następujących elementów:
 * Moduł WiFi (mikrokontroler ESP8266)
 * Moduł karty SD

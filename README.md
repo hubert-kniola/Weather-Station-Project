@@ -9,7 +9,7 @@
 1. Wciśnięcie przez użytkownika odnośnika `data` skutkować będzie przeniesieniem na podstronę, gdzie została udostępniona możliwość podglądu starszych odczytów na temat pogody.
 1. Wciśnięcie przez  użytkownika odnośnika `about` powoduję przejście na podstronę poświęconą autorom projektu oraz informacjom ogólnym na temat stacji pogodowej.
 #### Instrukcja obsługi urządzenia
-
+//TODO
 ## O projekcie
 
 ### Celem projektu było własnoręczne utworzenie stacji pogodowej przy zastosowaniu następujących elementów:

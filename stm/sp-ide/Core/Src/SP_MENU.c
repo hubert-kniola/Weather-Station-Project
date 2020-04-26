@@ -586,160 +586,169 @@ void MENU_Clock() {
 uint8_t MENU_HandleInput(void) {
 	_userReaction = false;
 
-	IfPressed (UP)
-			{
-				LCD_WakeScreen();
+	IfPressed (UP) {
+		LCD_WakeScreen();
 
-				if (M_State == ST_Clock) {
-					/* Przejdz w ekran opcji */
-					MENU_Options();
-				} else if (M_State == ST_Options) {
-					if (_optionsRow > 1) {
-						_optionsRow = LCD_CursorUp();
-						_currentOption--;
-					} else if (_currentOption != 1) {
-						LCD_PrintOptionsScreen(OPTIONS_STRING,
-								--_currentOption);
-						LCD_SetCursor(0, 1);
-					} else {
-						_currentOption = NOF_OPTIONS;
-						_optionsRow = 3;
+		if (M_State == ST_Clock) {
+			/* Przejdz w ekran opcji */
+			MENU_Options();
 
-						LCD_PrintOptionsScreen(OPTIONS_STRING,
-								_currentOption - 2);
-						LCD_SetCursor(0, 3);
-					}
-				} else if (M_State == ST_PassInput) {
-					/* Dopasuj kolejny znak ASCII */
-					_PWD_SaveAndWrite(_PWD_NextChar());
-				} else if (M_State == ST_SetDateTime) {
-					/* wstepne ograniczenie inputu */
-					_CLK_HandleDateTimeInput();
-				} else if (M_State == ST_WiFi) {
-					if (_optionsRow > 0) {
-						_optionsRow = LCD_CursorUp();
-						_currentOption--;
-					} else if (_networksIn > 4 && _currentOption != 1) {
-						LCD_PrintNetworks(_networksList, --_currentOption);
-						LCD_SetCursor(0, 0);
-					}
-				}
+		} else if (M_State == ST_Options) {
+			if (_optionsRow > 1) {
+				_optionsRow = LCD_CursorUp();
+				_currentOption--;
+			} else if (_currentOption != 1) {
+				LCD_PrintOptionsScreen(OPTIONS_STRING, --_currentOption);
+				LCD_SetCursor(0, 1);
+			} else {
+				_currentOption = NOF_OPTIONS;
+				_optionsRow = 3;
 
-				_userReaction = true;
-			}Or (DOWN)
-			{
-				LCD_WakeScreen();
+				LCD_PrintOptionsScreen(OPTIONS_STRING, _currentOption - 2);
+				LCD_SetCursor(0, 3);
+			}
 
-				if (M_State == ST_Options) {
-					if (_optionsRow < 3) {
-						_optionsRow = LCD_CursorDown();
-						_currentOption++;
-					} else if (_currentOption != NOF_OPTIONS) {
-						LCD_PrintOptionsScreen(OPTIONS_STRING,
-								++_currentOption - 2);
-						LCD_SetCursor(0, 3);
-					} else {
-						_currentOption = 1;
-						_optionsRow = 1;
+		} else if (M_State == ST_PassInput) {
+			/* Dopasuj kolejny znak ASCII */
+			_PWD_SaveAndWrite(_PWD_NextChar());
 
-						LCD_PrintOptionsScreen(OPTIONS_STRING, _currentOption);
-						LCD_SetCursor(0, 1);
-					}
-				} else if (M_State == ST_PassInput) {
-					/* Powrot do trybu zegara */
-					_WiFi_RequestConn();
-					MENU_Clock();
-				} else if (M_State == ST_SetDateTime) {
-					_CLK_ParseAndSetDateTime();
-					MENU_Clock();
-				} else if (M_State == ST_WiFi) {
-					if (_optionsRow < 3 && _optionsRow < _networksIn - 1) {
-						_optionsRow = LCD_CursorDown();
-						_currentOption++;
-					} else if (_currentOption != _networksIn) {
-						LCD_PrintNetworks(_networksList, ++_currentOption - 3);
-						LCD_SetCursor(0, 3);
-						_optionsRow = 3;
-					}
-				}
+		} else if (M_State == ST_SetDateTime) {
+			/* wstepne ograniczenie inputu */
+			_CLK_HandleDateTimeInput();
 
-				_userReaction = true;
-			}Or (LEFT)
-			{
-				LCD_WakeScreen();
+		} else if (M_State == ST_WiFi) {
+			if (_optionsRow > 0) {
+				_optionsRow = LCD_CursorUp();
+				_currentOption--;
+			} else if (_networksIn > 4 && _currentOption != 1) {
+				LCD_PrintNetworks(_networksList, --_currentOption);
+				LCD_SetCursor(0, 0);
+			}
+		}
 
-				if (M_State == ST_PassInput) {
-					/* Poprzedni znak w jednej z dwoch kolumn */
-					if (_PWD_index > 0) {
-						--_PWD_index;
-						LCD_CursorLeft();
-					}
-				} else if (M_State == ST_Options) {
-					MENU_Clock();
-				} else if (M_State == ST_SetDateTime) {
-					_CLK_MoveInputLeft();
-				} else if (M_State == ST_WiFi) {
-					MENU_Options();
-				}
+		_userReaction = true;
+	}
+	Or (DOWN) {
+		LCD_WakeScreen();
 
-				_userReaction = true;
-			}Or (RIGHT)
-			{
-				LCD_WakeScreen();
+		if (M_State == ST_Options) {
+			if (_optionsRow < 3) {
+				_optionsRow = LCD_CursorDown();
+				_currentOption++;
+			} else if (_currentOption != NOF_OPTIONS) {
+				LCD_PrintOptionsScreen(OPTIONS_STRING, ++_currentOption - 2);
+				LCD_SetCursor(0, 3);
+			} else {
+				_currentOption = 1;
+				_optionsRow = 1;
 
-				if (M_State == ST_PassInput) {
-					/* Kolejny znak w jednej z dwoch kolumn */
-					if (WiFiPassword[_PWD_index] != 0
-							&& _PWD_index < MAX_PASSWD_LEN - 1) {
-						++_PWD_index;
-						LCD_CursorRight();
-					}
-				} else if (M_State == ST_Options) {
-					if (_currentOption == O_CONN_W) {
-						MENU_OptionsWifiList();
-					} else if (_currentOption == O_DISCONN) {
-						R_Mode = RGB_Rainbow;
-						NET_WiFiDisconnect();
-						MENU_Clock();
+				LCD_PrintOptionsScreen(OPTIONS_STRING, _currentOption);
+				LCD_SetCursor(0, 1);
+			}
 
-					} else if (_currentOption == O_FORCE_U) {
-						_updateWeather = true;
-						R_Mode = RGB_Rainbow;
-						MENU_Clock();
+		} else if (M_State == ST_PassInput) {
+			/* Powrot do trybu zegara */
+			_WiFi_RequestConn();
+			MENU_Clock();
 
-					} else if (_currentOption == O_SET_DT) {
-						MENU_OptionsSetDateTime();
+		} else if (M_State == ST_SetDateTime) {
+			_CLK_ParseAndSetDateTime();
+			MENU_Clock();
 
-					} else if (_currentOption == O_CLEAR_SD) {
-						LCD_ClearScreen();
-						LCD_SetCursor(0, 1);
-						LCD_PrintCentered("Please wait");
+		} else if (M_State == ST_WiFi) {
+			if (_optionsRow < 3 && _optionsRow < _networksIn - 1) {
+				_optionsRow = LCD_CursorDown();
+				_currentOption++;
+			} else if (_currentOption != _networksIn) {
+				LCD_PrintNetworks(_networksList, ++_currentOption - 3);
+				LCD_SetCursor(0, 3);
+				_optionsRow = 3;
+			}
+		}
 
-						R_Mode = RGB_Rainbow;
-						SD_RemoveAllJsons();
-						R_Mode = RGB_Disabled;
+		_userReaction = true;
+	}
+	Or (LEFT) {
+		LCD_WakeScreen();
 
-						MENU_Clock();
+		if (M_State == ST_PassInput) {
+			/* Poprzedni znak w jednej z dwoch kolumn */
+			if (_PWD_index > 0) {
+				--_PWD_index;
+				LCD_CursorLeft();
+			}
 
-					} else if (_currentOption == O_TOGGLE_RGB) {
-						RGB_ToggleUsage();
-						MENU_Clock();
-					}
-				} else if (M_State == ST_SetDateTime) {
-					_CLK_MoveInputRight();
-				} else if (M_State == ST_WiFi) {
-					_PWD_ResetPasswd();
-					LCD_DisableBlink();
+		} else if (M_State == ST_Options) {
+			MENU_Clock();
 
-					if (_MENU_IsCurrentNetworkOpen() == 0) {
-						_WiFi_RequestConn();
-					} else {
-						MENU_PasswdInput();
-					}
-				}
+		} else if (M_State == ST_SetDateTime) {
+			_CLK_MoveInputLeft();
 
-				_userReaction = true;
-			}IfEnd;
+		} else if (M_State == ST_WiFi) {
+			MENU_Options();
+		}
+
+		_userReaction = true;
+	}
+	Or (RIGHT) {
+		LCD_WakeScreen();
+
+		if (M_State == ST_PassInput) {
+			/* Kolejny znak w jednej z dwoch kolumn */
+			if (WiFiPassword[_PWD_index] != 0 && _PWD_index < MAX_PASSWD_LEN - 1) {
+				++_PWD_index;
+				LCD_CursorRight();
+			}
+
+		} else if (M_State == ST_Options) {
+			if (_currentOption == O_CONN_W) {
+				MENU_OptionsWifiList();
+
+			} else if (_currentOption == O_DISCONN) {
+				R_Mode = RGB_Rainbow;
+				NET_WiFiDisconnect();
+				MENU_Clock();
+
+			} else if (_currentOption == O_FORCE_U) {
+				_updateWeather = true;
+				R_Mode = RGB_Rainbow;
+				MENU_Clock();
+
+			} else if (_currentOption == O_SET_DT) {
+				MENU_OptionsSetDateTime();
+
+			} else if (_currentOption == O_CLEAR_SD) {
+				LCD_ClearScreen();
+				LCD_SetCursor(0, 1);
+				LCD_PrintCentered("Please wait");
+
+				R_Mode = RGB_Rainbow;
+				SD_RemoveAllJsons();
+				R_Mode = RGB_Disabled;
+
+				MENU_Clock();
+
+			} else if (_currentOption == O_TOGGLE_RGB) {
+				RGB_ToggleUsage();
+				MENU_Clock();
+			}
+
+		} else if (M_State == ST_SetDateTime) {
+			_CLK_MoveInputRight();
+
+		} else if (M_State == ST_WiFi) {
+			_PWD_ResetPasswd();
+			LCD_DisableBlink();
+
+			if (_MENU_IsCurrentNetworkOpen() == 0) {
+				_WiFi_RequestConn();
+			} else {
+				MENU_PasswdInput();
+			}
+		}
+
+		_userReaction = true;
+	} IfEnd;
 
 	return 0;
 }

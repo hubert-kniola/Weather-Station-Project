@@ -101,47 +101,26 @@
 <script type="text/javascript">
   var url = window.location.href;
 
-  setTimeout(() => {
-    fetch(url + 'now')
-      .then(res => res.json())
-      .then(obj => {
-        var parent = document.getElementById('fetched_data');
+  var date = new Date();
+  var day = date.getDate().toString().padStart(2, '0');
+  var month = (date.getMonth() + 1).toString().padStart(2, '0');
+  var year = date.getFullYear().toString().substring(2);
 
-        var temp = document.createElement('p');
-        temp.setAttribute('class', 'col-md-6 mb-3');
-        temp.textContent = 'Temperature: ' + obj['temp'] + 'C';
-        parent.appendChild(temp);
+  var hour = date.getHours().toString().padStart(2, '0');
+  var minute = date.getMinutes().toString().padStart(2, '0');
+  var second = date.getSeconds().toString().padStart(2, '0');
 
-        var hum = document.createElement('p');
-        hum.setAttribute('class', 'col-md-6 mb-3');
-        hum.textContent = 'Air humidity: ' + obj['hum'] + '%';
-        parent.appendChild(hum);
-      })
-      .catch(e => console.log(e));
+  var postObj = new Object();
+  postObj.id = "dt_update";
+  postObj.date = day.split("").concat(month.split(""), year.split(""));
+  postObj.time = hour.split("").concat(minute.split(""), second.split(""));
 
-    setTimeout(() => {
-      document.getElementById('spinner').style.display = 'none';
-    }, 1400);
-    var date = new Date();
+  for (var i = 0; i < postObj.date.length; i++) {
+    postObj.date[i] = parseInt(postObj.date[i]);
+    postObj.time[i] = parseInt(postObj.time[i]);
+  }
 
-    var day = date.getDate().toString().padStart(2, '0');
-    var month = date.getDay().toString().padStart(2, '0');
-    var year = date.getFullYear().toString().substring(2);
-
-    var hour = date.getHours().toString().padStart(2, '0');
-    var minute = date.getMinutes().toString().padStart(2, '0');
-    var second = date.getSeconds().toString().padStart(2, '0');
-
-    var postObj = new Object();
-    postObj.id = "dt_update";
-    postObj.date = day.split("").concat(month.split(""), year.split(""));
-    postObj.time = hour.split("").concat(minute.split(""), second.split(""));
-
-    for (var i = 0; i < postObj.date.length; i++) {
-      postObj.date[i] = parseInt(postObj.date[i]);
-      postObj.time[i] = parseInt(postObj.time[i]);
-    }
-
+  window.onload = function () {
     setTimeout(() => {
       fetch(url + 'dt', {
         method: 'POST',
@@ -149,10 +128,36 @@
           'Content-Type': 'text/plain'
         },
         body: JSON.stringify(postObj)
-      }).catch(e => console.log(e));
-    }, 3000);
-  }, 1000);
+      })
+      .then(res => res.json())
+      .catch(e => console.log(e));
 
+      console.log(url + 'dt');
+
+      setTimeout(() => {
+        fetch(url + 'now')
+          .then(res => res.json())
+          .then(obj => {
+            var parent = document.getElementById('fetched_data');
+
+            var temp = document.createElement('h4');
+            temp.setAttribute('class', 'col-md-6 mb-3');
+            temp.innerHTML = '<small>Temperature: ' + obj['temp'] + 'C</small>';
+            parent.appendChild(temp);
+
+            var hum = document.createElement('h4');
+            hum.setAttribute('class', 'col-md-6 mb-3');
+            hum.innerHTML = '<small>Air humidity: ' + obj['hum'] + '%</small>';
+            parent.appendChild(hum);
+
+            document.getElementById('spinner').style.display = 'none';
+          })
+          .catch(e => console.log(e));
+
+        console.log(url + 'now');
+      }, 3500);
+    }, 100);
+  };
 </script>
 
 </html>

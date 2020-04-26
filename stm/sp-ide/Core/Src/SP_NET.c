@@ -106,7 +106,7 @@ uint8_t _NET_SendCommand(char command[], uint32_t tTimeout, uint32_t rTimeout) {
 void _NET_SetClientDConnMode(void) {
 	while (_NET_SendCommand(RESET, 1, 50) != 0)
 		HAL_Delay(1);
-	while (_NET_SendCommand(SET_MODE(MIXED), 5, 100) != 0)
+	while (_NET_SendCommand(SET_MODE(CLIENT), 5, 100) != 0)
 		HAL_Delay(1);
 	NET_WiFiDisconnect();
 }

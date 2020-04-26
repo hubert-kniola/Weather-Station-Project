@@ -134,25 +134,38 @@
 
   var parent = document.getElementById('fetched_data');
   var url = window.location.href;
+  var amount = 0;
 
   var to = url.lastIndexOf('/');
   to = to == -1 ? url.length : to + 1;
   url = url.substring(0, to);
 
-  setTimeout(() => {
-    fetch(url + 'all')
-      .then(res => res.json())
-      .then(obj => {
-        document.getElementById('info').innerHTML = 'The device has <b>' + obj.amount + '</b> logs.<br>Please specify the amount to fetch and the offset (0 means latest logs).';
-        document.getElementById('amount').style.display = 'block';
-      })
-      .catch(e => console.log(e));
-
+  window.onload = function () {
     setTimeout(() => {
-      document.getElementById('spinner').style.display = 'none';
-    }, 1400);
+      fetch(url + 'all')
+        .then(res => res.json())
+        .then(obj => {
+          amount = obj.amount;
+          document.getElementById('info').innerHTML = 'The device has <b>' + obj.amount + '</b> logs.<br>Please specify the amount to fetch and the offset (0 means latest logs).';
+          document.getElementById('amount').style.display = 'block';
+          document.getElementById('spinner').style.display = 'none';
+        })
+        .catch(e => console.log(e));
+    }, 1000);
+  };
 
-  }, 2000);
+  async function fetchJson(url, offset, ix) {
+    let response = await fetch(url + 'all/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain'
+      },
+      body: '{"offset":' + offset + ',"index":' + ix + '}'
+    });
+
+    let data = await response.json();
+    return data;
+  }
 
   function getData() {
     var offset = parseInt(document.getElementById('offset-field').value);
@@ -173,54 +186,39 @@
     document.getElementById('spinner').style.display = 'block';
     document.getElementById('phase1').style.display = 'none';
 
-    var arr = [];
     var ix = 0;
 
     for (var i = 0; i < N; i++) {
-      arr.push(i);
-
       setTimeout(() => {
-        fetch(url + 'all/logs', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain'
-          },
-          body: '{"offset":' + offset + ',"index":' + ix + '}'
-        })
-          .then(res => res.json())
+        fetchJson(url, offset, ix)
           .then(obj => {
 
-            if (obj.amount == 0) {
-              document.getElementById('error').innerHTML = 'There are no more logs to fetch in this range.';
-              return;
-            }
+              if (obj.amount == 0) {
+                document.getElementById('error').innerHTML = 'There are no more logs to fetch in this range.';
+                return;
+              }
 
-            var row = document.createElement('tr');
-            parent.appendChild(row);
+              var row = document.createElement('tr');
+              parent.appendChild(row);
 
-            var data = document.createElement('td');
-            data.setAttribute('class', 'text-white ')
-            data.textContent = ix;
-            row.appendChild(data);
+              document.getElementById('spinner').style.display = 'none';
+              document.getElementById('table').style.display = 'block';
 
-            Object.keys(obj).forEach(key => {
               var data = document.createElement('td');
               data.setAttribute('class', 'text-white ')
-              data.textContent = obj[key];
+              data.textContent = ix + 1;
               row.appendChild(data);
-            });
 
-          }).catch(e => {
-            document.getElementById('error').innerHTML = 'Device is <i>busy</i> right now.<br>Please try again in a minute.'
-          });
+              Object.keys(obj).forEach(key => {
+                var data = document.createElement('td');
+                data.setAttribute('class', 'text-white ')
+                data.textContent = obj[key];
+                row.appendChild(data);
+              });
 
-        ix++;
-      }, (i + 1) * 1500);
-
-      setTimeout(() => {
-        document.getElementById('spinner').style.display = 'none';
-        document.getElementById('table').style.display = 'block';
-      }, 1200);
+              ix++;
+              });
+      }, (i + 1) * 2200);
     }
   }
 </script>

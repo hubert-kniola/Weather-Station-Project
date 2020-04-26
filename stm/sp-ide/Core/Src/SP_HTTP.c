@@ -155,7 +155,6 @@ void HTTP_HandleRequest(char *request, char connID) {
 			ix++;
 		}
 
-		offset = atoi(tempStr);
 
 		ix = NET_GetIndexForPattern(ALL_INDEX_PATTERN);
 		if (ix == -1) {
@@ -171,6 +170,8 @@ void HTTP_HandleRequest(char *request, char connID) {
 			i++;
 			ix++;
 		}
+
+		offset = atoi(tempStr);
 		index = atoi(tempStr);
 
 		char *file = SD_GetJsonFromEnd(offset + index, &size);

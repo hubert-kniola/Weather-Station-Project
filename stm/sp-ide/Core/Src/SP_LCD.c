@@ -175,7 +175,7 @@ void LCD_Init(void) {
 	/* welcome screen */
 	LCD_PrintCentered("Weather  Station");
 	LCD_SetCursor(0, 2);
-	LCD_PrintCentered("v1.0");
+	LCD_PrintCentered("v1.1");
 	LCD_SetCursor(0, 3);
 	LCD_PrintCentered("2020 @ PUT");
 

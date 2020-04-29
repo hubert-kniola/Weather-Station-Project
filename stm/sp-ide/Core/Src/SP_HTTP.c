@@ -41,9 +41,8 @@ char _request[MAX_REQUEST_LEN];
 #define __resetLine() for(int i=0;i<MAX_LINE_LEN;i++)_line[i]=0
 #define __resetRequest() for(int i=0;i<MAX_REQUEST_LEN;i++)_request[i]=0
 
-#define CHECK_CONNECTION(a1,a2) arg=(NET_GetIndexForPattern(a2)!=-1)?false:true
-#define IF_ROUTE(arg) if(strcmp(req,arg)==0)
-#define OR_ROUTE(arg) else if(strcmp(req,arg)==0)
+#define IF_REQUEST(arg) if(strcmp(request,arg)==0)
+#define OR_REQUEST(arg) else IF_REQUEST(arg)
 
 char* _HTTP_ParseHeader(char *response, char *contentType, uint32_t length,
 		char *connection) {
@@ -72,7 +71,7 @@ char* _HTTP_ParseHeader(char *response, char *contentType, uint32_t length,
 	return (char*) _response;
 }
 
-char* _HTTP_GetRequestUrl(char *request) {
+char* _HTTP_GetRawRequest(char *request) {
 	int index = 0;
 
 	__resetRequest();
@@ -85,12 +84,12 @@ char* _HTTP_GetRequestUrl(char *request) {
 	return (char*) _request;
 }
 
-void HTTP_HandleRequest(char *request, char connID) {
-	char *req = _HTTP_GetRequestUrl(request);
+void HTTP_HandleRequest(char *req, char connID) {
+	char *request = _HTTP_GetRawRequest(req);
 	char *header;
 	uint32_t size;
 
-	IF_ROUTE("GET /") {
+	IF_REQUEST("GET /") {
 		char *file = SD_ReadFile("index.htm", &size);
 		header = _HTTP_ParseHeader(RSP_OK, CT_HTML, size, CN_CLOSE);
 
@@ -99,7 +98,7 @@ void HTTP_HandleRequest(char *request, char connID) {
 
 		NET_CloseConnSignal(connID);
 
-	} OR_ROUTE("GET /about") {
+	} OR_REQUEST("GET /about") {
 		char *file = SD_ReadFile("about.htm", &size);
 		header = _HTTP_ParseHeader(RSP_OK, CT_HTML, size, CN_CLOSE);
 
@@ -107,7 +106,8 @@ void HTTP_HandleRequest(char *request, char connID) {
 		NET_SendTCPData(connID, file);
 
 		NET_CloseConnSignal(connID);
-	} OR_ROUTE("GET /data") {
+
+	} OR_REQUEST("GET /data") {
 		char *file = SD_ReadFile("data.htm", &size);
 		header = _HTTP_ParseHeader(RSP_OK, CT_HTML, size, CN_CLOSE);
 
@@ -115,7 +115,8 @@ void HTTP_HandleRequest(char *request, char connID) {
 		NET_SendTCPData(connID, file);
 
 		NET_CloseConnSignal(connID);
-	} OR_ROUTE("GET /now") {
+
+	} OR_REQUEST("GET /now") {
 		MENU_ForceUpdate();
 
 		char *file = SD_GetLastJson(&size);
@@ -126,7 +127,7 @@ void HTTP_HandleRequest(char *request, char connID) {
 
 		NET_CloseConnSignal(connID);
 
-	} OR_ROUTE("GET /all") {
+	} OR_REQUEST("GET /all") {
 		uint32_t len = SD_GetNofJsons();
 
 		char file[100] = { 0 };
@@ -138,7 +139,7 @@ void HTTP_HandleRequest(char *request, char connID) {
 		NET_SendTCPData(connID, file);
 		NET_CloseConnSignal(connID);
 
-	} OR_ROUTE("POST /all/logs") {
+	} OR_REQUEST("POST /all/logs") {
 		int offset, index;
 
 		int ix = NET_GetIndexForPattern(ALL_OFFSET_PATTERN);
@@ -149,8 +150,8 @@ void HTTP_HandleRequest(char *request, char connID) {
 
 		int i = 0;
 		char tempStr[5] = { 0 };
-		while (request[ix] != ',') {
-			tempStr[i] = request[ix];
+		while (req[ix] != ',') {
+			tempStr[i] = req[ix];
 			i++;
 			ix++;
 		}
@@ -165,8 +166,8 @@ void HTTP_HandleRequest(char *request, char connID) {
 		i = 0;
 		for (int i = 0; i < 5; i++)
 			tempStr[i] = 0;
-		while (request[ix] != '}') {
-			tempStr[i] = request[ix];
+		while (req[ix] != '}') {
+			tempStr[i] = req[ix];
 			i++;
 			ix++;
 		}
@@ -188,12 +189,13 @@ void HTTP_HandleRequest(char *request, char connID) {
 		}
 
 		NET_CloseConnSignal(connID);
-	} OR_ROUTE("POST /dt") {
+
+	} OR_REQUEST("POST /dt") {
 		int index = NET_GetIndexForPattern(DT_UPDATE_PATTERN);
 
 		int test = index;
-		while (request[test++] != '}') {
-			if (test > strlen(request)) {
+		while (req[test++] != '}') {
+			if (test > strlen(req)) {
 				/* niekompletny json */
 				header = _HTTP_ParseHeader(RSP_NOT_FOUND, CT_JSON, 0, CN_CLOSE);
 				NET_SendTCPData(connID, header);
@@ -207,13 +209,13 @@ void HTTP_HandleRequest(char *request, char connID) {
 			uint8_t date[6] = { 0 }, time[6] = { 0 };
 
 			for (int i = 0; i < 6; i++) {
-				date[i] = request[index] - '0';
+				date[i] = req[index] - '0';
 				index += 2;
 			}
 
 			/* tak o zeby jednak nie wpasc w loopa */
-			while (request[index++] != '[') {
-				if (index > strlen(request)) {
+			while (req[index++] != '[') {
+				if (index > strlen(req)) {
 					header = _HTTP_ParseHeader(RSP_NOT_FOUND, CT_JSON, 0,
 					CN_CLOSE);
 					NET_SendTCPData(connID, header);
@@ -223,7 +225,7 @@ void HTTP_HandleRequest(char *request, char connID) {
 			}
 
 			for (int i = 0; i < 6; i++) {
-				time[i] = request[index] - '0';
+				time[i] = req[index] - '0';
 				index += 2;
 			}
 
